@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2015
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{803FD0C6-D64E-4E16-9DC3-1DAEC859A3D2}") = "M5StackGame", "M5StackGame.vgdbproj", "{9B9F0969-B579-47F4-9CE5-F4DA4755B45F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|VisualGDB = Debug|VisualGDB
+		Release|VisualGDB = Release|VisualGDB
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9B9F0969-B579-47F4-9CE5-F4DA4755B45F}.Debug|VisualGDB.ActiveCfg = Debug|VisualGDB
+		{9B9F0969-B579-47F4-9CE5-F4DA4755B45F}.Debug|VisualGDB.Build.0 = Debug|VisualGDB
+		{9B9F0969-B579-47F4-9CE5-F4DA4755B45F}.Release|VisualGDB.ActiveCfg = Release|VisualGDB
+		{9B9F0969-B579-47F4-9CE5-F4DA4755B45F}.Release|VisualGDB.Build.0 = Release|VisualGDB
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FE05EE56-CB92-4453-B63E-E54B7B408BD0}
+	EndGlobalSection
+EndGlobal
