@@ -5,6 +5,7 @@
 #include "esp_spi_flash.h"
 #include "Display.h"
 #include "Game.h"
+#include "Gyro.h"
 
 Game game;
 
@@ -17,6 +18,7 @@ static void DisableAudio()
 void app_main()
 {
 	DisableAudio();
+	Gyro_Initialize();
 	Display_Initialize();
 	
 	Game_Initialize(&game);

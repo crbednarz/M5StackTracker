@@ -74,7 +74,7 @@ static void Display_SetupPins()
 	
 	ledc_fade_func_install(0);
 	
-	ledc_set_duty(ledcChannelConfig.speed_mode, ledcChannelConfig.channel, 100);
+	ledc_set_duty(ledcChannelConfig.speed_mode, ledcChannelConfig.channel, 0xFF);
 	ledc_update_duty(ledcChannelConfig.speed_mode, ledcChannelConfig.channel);
 }
 
@@ -111,7 +111,6 @@ static void Display_SendInitializationCommands()
  
 	vTaskDelay(5 / portTICK_RATE_MS);
 	
-
 	Display_WriteCommand(0xEF);
 	Display_WriteData(0x03);
 	Display_WriteData(0x80);
@@ -230,38 +229,7 @@ void Display_Initialize()
 	Display_SetupSPI();
 	
 	Display_SendInitializationCommands();
-	
-	uint8_t row[DISPLAY_WIDTH * 2];
-	while (true)
-	{
-		memset(row, 0xFF, DISPLAY_WIDTH * 2);
-	
-		Display_WriteCommand(ILI9341_CASET);
-		Display_WriteData(0);
-		Display_WriteData(0);
-		Display_WriteData((DISPLAY_WIDTH >> 8) & 0xFF);
-		Display_WriteData(DISPLAY_WIDTH & 0xFF);
-	
-	
-		Display_WriteCommand(ILI9341_PASET);
-		Display_WriteData(0);
-		Display_WriteData(0);
-		Display_WriteData((DISPLAY_HEIGHT >> 8) & 0xFF);
-		Display_WriteData(DISPLAY_HEIGHT & 0xFF);
-	
-	
-		Display_WriteCommand(ILI9341_RAMWR);
-		for (int y = 0; y < DISPLAY_HEIGHT; y++)
-			Display_WriteDataArray(row, DISPLAY_WIDTH * 2);
-	}
 }
-
-
-void Display_BeginWrite()
-{
-	
-}
-
 
 void Display_WriteCommand(uint8_t command)
 {
@@ -284,7 +252,7 @@ void Display_WriteData(uint8_t data)
 	spi_device_transmit(Display_SpiDeviceHandle, &transaction);
 }
 
-void Display_WriteDataArray(uint8_t* data, size_t length)
+void Display_WriteDataArray(const uint8_t* data, size_t length)
 {
 	spi_transaction_t transaction;
 	memset(&transaction, 0, sizeof(transaction));
@@ -294,11 +262,3 @@ void Display_WriteDataArray(uint8_t* data, size_t length)
 	transaction.flags = 0;
 	spi_device_transmit(Display_SpiDeviceHandle, &transaction);
 }
-
-
-void Display_EndWrite()
-{
-	
-}
-
-
