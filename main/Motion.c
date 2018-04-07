@@ -1,18 +1,29 @@
-#include "Gyro.h"
+#include "Motion.h"
 #include "driver/i2c.h"
 #include "MPU9250.h"
 #include <stdint.h>
-
 
 #define PIN_SDA 21
 #define PIN_SCL 22
 #define I2C_PORT I2C_NUM_1
 #define MAGNETOMETER_SCALE MFS_16BITS
 #define ACCELEROMETER_SCALE AFS_2G
-#define GYRO_SCALE GFS_250DPS
+#define Motion_SCALE GFS_250DPS
 
 
-static void Gyro_WriteReadRequest(uint8_t address, uint8_t subAddress)
+typedef struct
+{
+    int16_t X;
+    int16_t Y;
+    int16_t Z;
+} GyroState;
+
+static struct
+{
+    GyroState GyroState;
+} MotionContext;
+
+static void Motion_WriteReadRequest(uint8_t address, uint8_t subAddress)
 {
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
@@ -23,7 +34,7 @@ static void Gyro_WriteReadRequest(uint8_t address, uint8_t subAddress)
 	i2c_cmd_link_delete(cmd);	
 }
 
-static void Gyro_WriteByte(uint8_t address, uint8_t subAddress, uint8_t data)
+static void Motion_WriteByte(uint8_t address, uint8_t subAddress, uint8_t data)
 {
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
@@ -36,9 +47,9 @@ static void Gyro_WriteByte(uint8_t address, uint8_t subAddress, uint8_t data)
 }
 
 
-static uint8_t Gyro_ReadByte(uint8_t address, uint8_t subAddress)
+static uint8_t Motion_ReadByte(uint8_t address, uint8_t subAddress)
 {
-	Gyro_WriteReadRequest(address, subAddress);
+	Motion_WriteReadRequest(address, subAddress);
 	uint8_t result;
 	
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
@@ -51,9 +62,9 @@ static uint8_t Gyro_ReadByte(uint8_t address, uint8_t subAddress)
 	return result;
 }
 
-static void Gyro_ReadBytes(uint8_t address, uint8_t subAddress, uint8_t* data, size_t length)
+static void Motion_ReadBytes(uint8_t address, uint8_t subAddress, uint8_t* data, size_t length)
 {	
-	Gyro_WriteReadRequest(address, subAddress);
+	Motion_WriteReadRequest(address, subAddress);
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, (address << 1) | I2C_MASTER_READ, true);
@@ -65,7 +76,7 @@ static void Gyro_ReadBytes(uint8_t address, uint8_t subAddress, uint8_t* data, s
 	i2c_cmd_link_delete(cmd);
 }
 
-static void Gyro_InitializeI2C()
+static void Motion_InitializeI2C()
 {
 	i2c_config_t config;
 	config.mode = I2C_MODE_MASTER;
@@ -80,19 +91,21 @@ static void Gyro_InitializeI2C()
 }
 
 
-static void Gyro_InitializeDevice()
+static void Motion_InitializeGyro()
 {
 	
 }
 
 
-void Gyro_Initialize()
+void Motion_Initialize()
 {
-	Gyro_InitializeI2C();
-	Gyro_InitializeDevice();
+	memset(&MotionContext, 0, sizeof(MotionContext));
+
+	Motion_InitializeI2C();
+	Motion_InitializeGyro();
 }
 
-void Gyro_UpdateState()
+void Motion_UpdateState()
 {
 	
 }
