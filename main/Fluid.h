@@ -2,8 +2,8 @@
 #define FLUID_H
 
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 #include "Render.h"
 
 

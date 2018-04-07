@@ -33,8 +33,8 @@ void Fluid_Render(const CompiledFluidRender* compiledRender, FrameLine* frameLin
 
 
 void Fluid_Update(Fluid* fluids, size_t length)
-{[
-	GyroState gyroState = Gyro_ReadState();
+{
+	/*GyroState gyroState = Gyro_ReadState();
 	double x = gyroState.X * (1.0 / 32768.0);
 	double y = gyroState.Y * (1.0 / 32768.0);
 	double z = gyroState.Z * (1.0 / 32768.0);
@@ -45,5 +45,6 @@ void Fluid_Update(Fluid* fluids, size_t length)
 	if (fluids[0].Y < 0)
 		fluids[0].Y = 0;
 	if (fluids[0].Y > DISPLAY_HEIGHT)
-		fluids[0].Y = DISPLAY_HEIGHT;
+		fluids[0].Y = DISPLAY_HEIGHT;*/
+
 }

@@ -3,7 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := m5stack-game
+PROJECT_NAME := hello-world
 
 include $(IDF_PATH)/make/project.mk
 

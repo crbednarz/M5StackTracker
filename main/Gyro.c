@@ -12,7 +12,6 @@
 #define GYRO_SCALE GFS_250DPS
 
 
-
 static void Gyro_WriteReadRequest(uint8_t address, uint8_t subAddress)
 {
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();

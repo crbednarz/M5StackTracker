@@ -264,3 +264,6 @@ tmp/
 CodeDB/
 VisualGDBCache/
 *.old
+
+.vscode
+build/

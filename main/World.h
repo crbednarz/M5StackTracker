@@ -2,11 +2,12 @@
 #define WORLD_H
 
 #include "Render.h"
+#include <stdint.h>
 
 
 typedef struct
 {
-	
+    
 } World;
 
 void World_Render(const World* world, FrameLine* frameLine);

@@ -22,7 +22,7 @@ void Game_Render(const Game* game)
 {
 	Render_ResetFill();
 	
-	FrameLine frameLine = { };
+	FrameLine frameLine = { 0 };
 	
 	CompiledFluidRender compiledFluidRender;
 	fluid.Radius = 5;
