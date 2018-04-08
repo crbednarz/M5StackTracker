@@ -7,6 +7,7 @@
 #include "Game.h"
 #include "Motion.h"
 #include "Input.h"
+#include "I2C.h"
 
 Game ActiveGame;
 
@@ -20,6 +21,7 @@ static void DisableAudio()
 static void InitializeSystems()
 {
 	DisableAudio();
+	I2C_Initialize();
 	Motion_Initialize();
 	Display_Initialize();
 	Input_Initialize();

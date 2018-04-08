@@ -1,10 +1,10 @@
 #ifndef PERIPHERAL_CONFIG_H
 #define PERIPHERAL_CONFIG_H
 
-// Motion (MPU9250)
-#define MOTION_I2C_PORT I2C_NUM_1
-#define MOTION_I2C_SDA 21
-#define MOTION_I2C_SCL 22
+
+#define I2C_PORT I2C_NUM_1
+#define I2C_SDA 21
+#define I2C_SCL 22
 
 // Display (ILI9341)
 #define DISPLAY_PIN_MOSI 23
@@ -15,7 +15,7 @@
 #define DISPLAY_PIN_BCKL 32
 
 // Input (Gameboy FACE)
-#define INPUT_I2C_PORT I2C_NUM_2
+#define INPUT_PIN_INT 5
 
 
 #endif
