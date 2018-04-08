@@ -3,18 +3,28 @@
 #include "Fluid.h"
 #include <string.h>
 
+static void Game_AddFluid(Game* game, int16_t x, int16_t y, int radius)
+{
+	size_t index = game->FluidCount;
+	game->Fluids[index].X = x;
+	game->Fluids[index].Y = y;
+	game->Fluids[index].Radius = radius;
+	
+	game->FluidCount++;
+}
 
-Fluid fluid;
+
 void Game_Initialize(Game* game)
 {
 	memset(game, 0, sizeof(Game));
-	fluid.Y = (DISPLAY_HEIGHT / 2);
+	Game_AddFluid(game, 0, DISPLAY_HEIGHT / 2, 5);
 }
 
 
 void Game_Update(Game* game)
 {
-		
+	Fluid_Update(game->Fluids, game->FluidCount);
+	
 }
 
 
@@ -25,10 +35,8 @@ void Game_Render(const Game* game)
 	FrameLine frameLine = { 0 };
 	
 	CompiledFluidRender compiledFluidRender;
-	fluid.Radius = 5;
 	
-	Fluid_Update(&fluid, 1);
-	Fluid_BuildRender(&fluid, 1, &compiledFluidRender);
+	Fluid_BuildRender(game->Fluids, game->FluidCount, &compiledFluidRender);
 	
 	
 	for (int y = 0; y < DISPLAY_HEIGHT; y++)

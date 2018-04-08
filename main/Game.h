@@ -3,13 +3,19 @@
 
 
 #include "World.h"
+#include "Fluid.h"
 
+#define MAX_FLUIDS 10
 
 // Game system acts as the glue to hold together the various subsystem of a single game session.
 
 typedef struct
 {	
 	World World;
+	
+	Fluid Fluids[MAX_FLUIDS];
+	size_t FluidCount;
+	
 } Game;
 
 

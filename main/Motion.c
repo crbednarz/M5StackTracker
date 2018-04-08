@@ -1,11 +1,14 @@
 #include "Motion.h"
 #include "driver/i2c.h"
 #include "MPU9250.h"
+#include "PeripheralConfig.h"
 #include <stdint.h>
+#include <string.h>
 
-#define PIN_SDA 21
-#define PIN_SCL 22
-#define I2C_PORT I2C_NUM_1
+
+#define PIN_SDA MOTION_I2C_SDA
+#define PIN_SCL MOTION_I2C_SCL
+#define I2C_PORT MOTION_I2C_PORT
 #define MAGNETOMETER_SCALE MFS_16BITS
 #define ACCELEROMETER_SCALE AFS_2G
 #define Motion_SCALE GFS_250DPS
@@ -18,10 +21,12 @@ typedef struct
     int16_t Z;
 } GyroState;
 
+
 static struct
 {
     GyroState GyroState;
 } MotionContext;
+
 
 static void Motion_WriteReadRequest(uint8_t address, uint8_t subAddress)
 {

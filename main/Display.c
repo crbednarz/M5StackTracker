@@ -8,50 +8,36 @@
 #include <string.h>
 #include <driver/ledc.h>
 #include "ILI9341.h"
+#include "PeripheralConfig.h"
 
-
-#if true
-#define PIN_MOSI 23
-#define PIN_CLK  18
-#define PIN_CS   14
-#define PIN_DC   27
-#else
-#define PIN_MOSI 2
-#define PIN_CLK  25
-#define PIN_CS   26
-#define PIN_DC   5
-#endif
-
-#define PIN_RST  33
-#define PIN_BCKL 32
 
 spi_device_handle_t Display_SpiDeviceHandle;
 
 static void Display_PreTransferCallback(spi_transaction_t* transaction)
 {
 	int dc = (int)transaction->user;
-	gpio_set_level(PIN_DC, dc);	
+	gpio_set_level(DISPLAY_PIN_DC, dc);	
 }
 
 static void Display_SetupPins()
 {
 	//Initialize non-SPI GPIOs
-	gpio_set_direction(PIN_DC, GPIO_MODE_OUTPUT);
-	gpio_set_direction(PIN_RST, GPIO_MODE_OUTPUT);
-	gpio_set_direction(PIN_BCKL, GPIO_MODE_OUTPUT);
-	gpio_set_direction(PIN_CS, GPIO_MODE_OUTPUT);
+	gpio_set_direction(DISPLAY_PIN_DC, GPIO_MODE_OUTPUT);
+	gpio_set_direction(DISPLAY_PIN_RST, GPIO_MODE_OUTPUT);
+	gpio_set_direction(DISPLAY_PIN_BCKL, GPIO_MODE_OUTPUT);
+	gpio_set_direction(DISPLAY_PIN_CS, GPIO_MODE_OUTPUT);
 
-	gpio_set_level(PIN_CS, 1);
+	gpio_set_level(DISPLAY_PIN_CS, 1);
 	
 	//Reset the display
-	gpio_set_level(PIN_RST, 0);
+	gpio_set_level(DISPLAY_PIN_RST, 0);
 	vTaskDelay(100 / portTICK_RATE_MS);
-	gpio_set_level(PIN_RST, 1);
+	gpio_set_level(DISPLAY_PIN_RST, 1);
 	vTaskDelay(100 / portTICK_RATE_MS);
-	gpio_set_level(PIN_BCKL, 0);
+	gpio_set_level(DISPLAY_PIN_BCKL, 0);
 	
 	
-	gpio_set_level(PIN_CS, 0);
+	gpio_set_level(DISPLAY_PIN_CS, 0);
 	
 	ledc_timer_config_t ledcTimer = {
 		.duty_resolution = LEDC_TIMER_13_BIT,
@@ -65,7 +51,7 @@ static void Display_SetupPins()
 	ledc_channel_config_t ledcChannelConfig = {
 		.channel    = LEDC_CHANNEL_0,
 		.duty       = 0,
-		.gpio_num   = PIN_BCKL,
+		.gpio_num   = DISPLAY_PIN_BCKL,
 		.speed_mode = LEDC_HIGH_SPEED_MODE,
 		.timer_sel  = LEDC_TIMER_0
 	};
@@ -83,9 +69,9 @@ static void Display_SetupSPI()
 {
 	spi_bus_config_t spiBugConfig =
 	{
-		.mosi_io_num = PIN_MOSI,
+		.mosi_io_num = DISPLAY_PIN_MOSI,
 		.miso_io_num = -1,
-		.sclk_io_num = PIN_CLK,
+		.sclk_io_num = DISPLAY_PIN_CLK,
 		.quadwp_io_num = -1,
 		.quadhd_io_num = -1
 	};
@@ -94,7 +80,7 @@ static void Display_SetupSPI()
 	{
 		.clock_speed_hz = 40000000,
 		.mode = 0,
-		.spics_io_num = PIN_CS, 
+		.spics_io_num = DISPLAY_PIN_CS, 
 		.queue_size = 7,
 		.pre_cb = Display_PreTransferCallback
 	};

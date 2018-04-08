@@ -33,5 +33,11 @@ void Fluid_Render(const CompiledFluidRender* compiledRender, FrameLine* frameLin
 
 void Fluid_Update(Fluid* fluids, size_t length)
 {
+	for (int i = 0; i < length; i++)
+	{
+		Fluid* fluid = &fluids[i];
 
+		fluid->Y += 1;
+
+	}
 }

@@ -5,9 +5,10 @@
 #include "esp_spi_flash.h"
 #include "Display.h"
 #include "Game.h"
-#include "Gyro.h"
+#include "Motion.h"
+#include "Input.h"
 
-Game game;
+Game ActiveGame;
 
 static void DisableAudio()
 {
@@ -15,16 +16,23 @@ static void DisableAudio()
 	gpio_set_level(25, 0);	
 }
 
-void app_main()
+
+static void InitializeSystems()
 {
 	DisableAudio();
-	Gyro_Initialize();
+	Motion_Initialize();
 	Display_Initialize();
-	
-	Game_Initialize(&game);
+	Input_Initialize();
+}
+
+void app_main()
+{
+	InitializeSystems();
+
+	Game_Initialize(&ActiveGame);
 	while (1)
 	{
-		Game_Update(&game);
-		Game_Render(&game);
+		Game_Update(&ActiveGame);
+		Game_Render(&ActiveGame);
 	}
 }
