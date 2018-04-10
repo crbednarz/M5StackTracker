@@ -1,7 +1,10 @@
 #include "Game.h"
 #include "Render.h"
 #include "Fluid.h"
+#include "Input.h"
 #include <string.h>
+#include <stdio.h>
+
 
 static void Game_AddFluid(Game* game, int16_t x, int16_t y, int radius)
 {
@@ -24,6 +27,8 @@ void Game_Initialize(Game* game)
 void Game_Update(Game* game)
 {
 	Fluid_Update(game->Fluids, game->FluidCount);
+	Input_Update();
+
 	
 }
 

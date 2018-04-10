@@ -17,9 +17,14 @@ static void DisableAudio()
 	gpio_set_level(25, 0);	
 }
 
+static void InitializeISR()
+{
+	gpio_install_isr_service(0);
+}
 
 static void InitializeSystems()
 {
+	InitializeISR();
 	DisableAudio();
 	I2C_Initialize();
 	Motion_Initialize();

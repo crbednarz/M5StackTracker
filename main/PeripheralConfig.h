@@ -1,7 +1,7 @@
 #ifndef PERIPHERAL_CONFIG_H
 #define PERIPHERAL_CONFIG_H
 
-
+// I2C
 #define I2C_PORT I2C_NUM_1
 #define I2C_SDA 21
 #define I2C_SCL 22

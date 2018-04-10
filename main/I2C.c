@@ -9,7 +9,7 @@ void I2C_Initialize()
 	config.sda_pullup_en = GPIO_PULLUP_ENABLE;
 	config.scl_io_num = I2C_SCL;
 	config.scl_pullup_en = GPIO_PULLUP_ENABLE;
-	config.master.clk_speed = 100000;  // 100000 is the "Standard" frequency
+	config.master.clk_speed = 100000; // 100000 is the "Standard" frequency
 	
 	i2c_param_config(I2C_PORT, &config);
 	i2c_driver_install(I2C_PORT, config.mode, 0, 0, 0);		
