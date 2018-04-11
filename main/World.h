@@ -10,7 +10,7 @@ typedef struct
     
 } World;
 
-void World_Render(const World* world, FrameLine* frameLine);
+void World_Render(const World* world, FrameBuffer* frameBuffer);
 	
 
 #endif

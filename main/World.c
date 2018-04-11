@@ -2,9 +2,9 @@
 #include <string.h>
 
 
-void World_Render(const World* world, FrameLine* frameLine)
+void World_Render(const World* world, FrameBuffer* frameBuffer)
 {
-	memset(frameLine->Data, 0, FRAME_LINE_BYTES);
+	memset(frameBuffer->Data, 0, FRAME_BUFFER_BYTES);
 	
 	
 }
