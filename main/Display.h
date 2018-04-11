@@ -8,6 +8,7 @@
 #define DISPLAY_HEIGHT 240
 #define DISPLAY_BYTES_PER_PIXEL 2
 
+
 void Display_Initialize();
 
 void Display_WriteCommand(uint8_t command);

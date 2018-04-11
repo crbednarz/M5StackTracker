@@ -18,6 +18,8 @@ typedef struct
 } Fluid;
 
 
+void Fluid_Initialize();
+
 void Fluid_Render(const Fluid* fluids, size_t length, FrameBuffer* frameBuffer);
 
 void Fluid_Update(Fluid* fluids, size_t length);

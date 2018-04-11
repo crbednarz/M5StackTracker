@@ -146,7 +146,7 @@ static void Display_SendInitializationCommands()
 	Display_WriteData(0x86);               //--
  
 	Display_WriteCommand(ILI9341_MADCTL);  // Memory Access Control
-	Display_WriteData(0x48);
+	Display_WriteData(0x8);
  
 	Display_WriteCommand(ILI9341_PIXFMT);
 	Display_WriteData(0x55);
