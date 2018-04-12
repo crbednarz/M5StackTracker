@@ -78,7 +78,7 @@ static void Display_SetupSPI()
 	
 	spi_device_interface_config_t deviceInterfaceConfig =
 	{
-		.clock_speed_hz = 40000000,
+		.clock_speed_hz = 60000000,
 		.mode = 0,
 		.spics_io_num = DISPLAY_PIN_CS, 
 		.queue_size = 7,
