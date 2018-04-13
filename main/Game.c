@@ -5,8 +5,6 @@
 #include <string.h>
 #include <stdio.h>
 
-static FrameBuffer Frame;
-
 static void Game_AddFluid(Game* game, int16_t x, int16_t y, int radius)
 {
 	size_t index = game->FluidCount;
@@ -23,6 +21,7 @@ static void Game_AddFluid(Game* game, int16_t x, int16_t y, int radius)
 void Game_Initialize(Game* game)
 {
 	memset(game, 0, sizeof(Game));
+
 	Fluid_Initialize();
 	Game_AddFluid(game, DISPLAY_WIDTH / 2, DISPLAY_HEIGHT / 2, 20);
 	
@@ -59,10 +58,10 @@ void Game_Update(Game* game)
 	Fluid_Update(game->Fluids, game->FluidCount);
 }
 
-
 void Game_Render(const Game* game)
 {
-	World_Render(&game->World, &Frame);
-	Fluid_Render(game->Fluids, game->FluidCount, &Frame);
-	Render_DrawFrame(&Frame);
+	FrameBuffer* frame = Render_GetWorkingFrame();
+	World_Render(&game->World, frame);
+	Fluid_Render(game->Fluids, game->FluidCount, frame);
+	Render_SwapBuffers();
 }

@@ -60,7 +60,7 @@ static void Display_SetupPins()
 	
 	ledc_fade_func_install(0);
 	
-	ledc_set_duty(ledcChannelConfig.speed_mode, ledcChannelConfig.channel, 0xFF);
+	ledc_set_duty(ledcChannelConfig.speed_mode, ledcChannelConfig.channel, 0xFFFF);
 	ledc_update_duty(ledcChannelConfig.speed_mode, ledcChannelConfig.channel);
 }
 
@@ -238,8 +238,42 @@ void Display_WriteData(uint8_t data)
 	spi_device_transmit(Display_SpiDeviceHandle, &transaction);
 }
 
+static void Display_WriteFragmentedDataArray(const uint8_t* data, size_t length)
+{
+	spi_transaction_t transaction;
+	memset(&transaction, 0, sizeof(transaction));
+	transaction.length = SPI_MAX_DMA_LEN * 8;
+	transaction.tx_buffer = data;
+	transaction.rxlength = 0;
+	transaction.user = (void*)1;
+	transaction.flags = 0;
+
+	int i;
+	for (i = 0; i + SPI_MAX_DMA_LEN < length; i += SPI_MAX_DMA_LEN)
+	{
+		transaction.tx_buffer = &data[i];
+		transaction.rxlength = 0;
+		spi_device_transmit(Display_SpiDeviceHandle, &transaction);
+	}
+
+	if (i != length)
+	{
+		transaction.tx_buffer = &data[i];
+		transaction.length = (length - i - 1) * 8;
+		transaction.rxlength = 0;
+		spi_device_transmit(Display_SpiDeviceHandle, &transaction);
+	}
+}
+
+
 void Display_WriteDataArray(const uint8_t* data, size_t length)
 {
+	if (length > SPI_MAX_DMA_LEN)
+	{
+		Display_WriteFragmentedDataArray(data, length);
+		return;
+	}
+
 	spi_transaction_t transaction;
 	memset(&transaction, 0, sizeof(transaction));
 	transaction.length = length * 8;

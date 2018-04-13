@@ -25,7 +25,12 @@ inline uint16_t Render_CreateColor(uint8_t r, uint8_t g, uint8_t b)
 	return result;
 }
 
-void Render_DrawFrame(const FrameBuffer* frameBuffer);
+FrameBuffer* Render_GetWorkingFrame();
 
+void Render_Initialize();
+
+void Render_SwapBuffers();
+
+void Render_Present();
 
 #endif

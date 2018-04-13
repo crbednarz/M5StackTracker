@@ -28,18 +28,32 @@ static void InitializeSystems()
 {
 	InitializeISR();
 	DisableAudio();
+	Render_Initialize();
 	I2C_Initialize();
 	Motion_Initialize();
 	Display_Initialize();
 	Input_Initialize();
 }
 
+
+static void RenderThreadEntryPoint()
+{
+	while (true)
+	{
+		Render_Present();
+	}
+}
+
+
 void app_main()
 {
 	InitializeSystems();
 
+	xTaskCreatePinnedToCore(&RenderThreadEntryPoint, "RenderThread", 2048, NULL, 25, NULL, 1);
+
 	Game_Initialize(&ActiveGame);
 	Stopwatch_Reset(&Timer);
+	printf("RAM left %d\n", esp_get_free_heap_size());
 	while (1)
 	{
 		Stopwatch_Start(&Timer);

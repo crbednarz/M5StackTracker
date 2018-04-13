@@ -18,7 +18,7 @@ void I2C_Initialize()
 
 void I2C_WriteBytes(uint8_t address, const uint8_t* data, size_t length)
 {
-	// 'const' has been casted away on data for i2c_master_write which I cna't imagine ever modifying the data.
+	// 'const' has been casted away on data for i2c_master_write which I can't imagine ever modifying the data.
 	// It may be worth investigating the source further.
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
