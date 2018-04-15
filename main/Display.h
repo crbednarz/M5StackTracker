@@ -4,16 +4,12 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define DISPLAY_WIDTH 240
-#define DISPLAY_HEIGHT 320
+#define DISPLAY_WIDTH 320
+#define DISPLAY_HEIGHT 240
 #define DISPLAY_BYTES_PER_PIXEL 2
 #define DISPLAY_SIZE DISPLAY_WIDTH * DISPLAY_HEIGHT
 #define DISPLAY_BYTES (DISPLAY_SIZE * DISPLAY_BYTES_PER_PIXEL)
 
-
-void Display_BeginWrite();
-
-void Display_EndWrite();
 
 void Display_Initialize();
 

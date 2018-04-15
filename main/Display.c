@@ -219,16 +219,6 @@ static void Display_SendInitializationCommands()
 }
 
 
-void Display_BeginWrite()
-{
-}
-
-
-void Display_EndWrite()
-{
-}
-
-
 void Display_Initialize()
 {
 	Display_SetupPins();

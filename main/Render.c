@@ -11,7 +11,6 @@ static volatile bool IsUploadingFrameDirty = false;
 
 static void Render_UploadFrame(const FrameBuffer* frameBuffer)
 {
-	Display_BeginWrite();
 	Display_WriteCommand(ILI9341_CASET);
 	uint8_t caset[4] = { 0, 0, (DISPLAY_WIDTH >> 8) & 0xFF, DISPLAY_WIDTH & 0xFF};
 	Display_WriteDataArray(caset, 4);
@@ -33,7 +32,6 @@ static void Render_UploadFrame(const FrameBuffer* frameBuffer)
 
 		Display_WriteDataArray((uint8_t*)&UploadingFrame->Data[DISPLAY_WIDTH * y], DISPLAY_WIDTH * DISPLAY_BYTES_PER_PIXEL);
 	}
-	Display_EndWrite();
 }
 
 
