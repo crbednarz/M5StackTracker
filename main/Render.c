@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 
-static FrameBuffer FrameBuffers[1];
+static FrameBuffer FrameBuffers[RENDER_ROW_STRIDE];
 static FrameBuffer* UploadingFrame;
 static FrameBuffer* WorkingFrame;
 
@@ -11,22 +11,29 @@ static volatile bool IsUploadingFrameDirty = false;
 
 static void Render_UploadFrame(const FrameBuffer* frameBuffer)
 {
+	Display_BeginWrite();
 	Display_WriteCommand(ILI9341_CASET);
-	Display_WriteData(0);
-	Display_WriteData(0);
-	Display_WriteData((DISPLAY_WIDTH >> 8) & 0xFF);
-	Display_WriteData(DISPLAY_WIDTH & 0xFF);
+	uint8_t caset[4] = { 0, 0, (DISPLAY_WIDTH >> 8) & 0xFF, DISPLAY_WIDTH & 0xFF};
+	Display_WriteDataArray(caset, 4);
 	
-	
-	Display_WriteCommand(ILI9341_PASET);
-	Display_WriteData(0);
-	Display_WriteData(0);
-	Display_WriteData((DISPLAY_HEIGHT >> 8) & 0xFF);
-	Display_WriteData(DISPLAY_HEIGHT & 0xFF);
-	
-	Display_WriteCommand(ILI9341_RAMWR);
+	for (int y = 0; y < FRAME_ROWS; y++)
+	{
+		int displayRow = y * RENDER_ROW_STRIDE + frameBuffer->RowOffset;
+		Display_WriteCommand(ILI9341_PASET);
+		uint8_t paset[4] = 
+		{ 
+			(displayRow >> 8) & 0xFF, 
+			displayRow & 0xFF, 
+			(DISPLAY_HEIGHT >> 8) & 0xFF, 
+			DISPLAY_HEIGHT & 0xFF
+		};
+		Display_WriteDataArray(paset, 4);
 
-	Display_WriteDataArray((const uint8_t*)frameBuffer->Data, FRAME_BUFFER_BYTES);
+		Display_WriteCommand(ILI9341_RAMWR);
+
+		Display_WriteDataArray((uint8_t*)&UploadingFrame->Data[DISPLAY_WIDTH * y], DISPLAY_WIDTH * DISPLAY_BYTES_PER_PIXEL);
+	}
+	Display_EndWrite();
 }
 
 
@@ -37,8 +44,13 @@ FrameBuffer* Render_GetWorkingFrame()
 
 void Render_Initialize()
 {
+	for (int i = 0; i < RENDER_ROW_STRIDE; i++)
+	{
+		FrameBuffers[i].RowOffset = i;
+	}
+
 	UploadingFrame = &FrameBuffers[0];
-	WorkingFrame = &FrameBuffers[0];
+	WorkingFrame = &FrameBuffers[1];
 	IsUploadingFrameDirty = false;
 }
 
@@ -50,7 +62,7 @@ void Render_SwapBuffers()
 		
 	}
 
-	FrameBuffer* swapTemp = UploadingFrame;
+	FrameBuffer* swapTemp = WorkingFrame;
 	WorkingFrame = UploadingFrame;
 	UploadingFrame = swapTemp;
 	IsUploadingFrameDirty = true;

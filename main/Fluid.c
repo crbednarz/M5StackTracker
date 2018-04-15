@@ -44,7 +44,7 @@ static void Fluid_DrawFluid(FrameBuffer* frameBuffer, int fluidX, int fluidY, in
 {
 	DrawBox drawBox = Fluid_CreateDrawBox(fluidX, fluidY, radius);
 	int radiusSquared = radius * radius;
-	for (int y = drawBox.Top; y < drawBox.Bottom; y++)
+	for (int y = (drawBox.Top & ~frameBuffer->RowOffset) + frameBuffer->RowOffset; y < drawBox.Bottom; y += RENDER_ROW_STRIDE)
 	{
 		for (int x = drawBox.Left; x < drawBox.Right; x++)
 		{
@@ -52,7 +52,8 @@ static void Fluid_DrawFluid(FrameBuffer* frameBuffer, int fluidX, int fluidY, in
 			int yDiff = y - fluidY;
 			if (radiusSquared < (xDiff * xDiff + yDiff * yDiff))
 				continue;
-			frameBuffer->Data[y * DISPLAY_WIDTH + x] = color;
+			int drawY = y / RENDER_ROW_STRIDE;
+			frameBuffer->Data[drawY * DISPLAY_WIDTH + x] = color;
 		}
 	}
 }

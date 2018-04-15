@@ -4,7 +4,5 @@
 
 void World_Render(const World* world, FrameBuffer* frameBuffer)
 {
-	memset(frameBuffer->Data, 0, FRAME_BUFFER_BYTES);
-	
-	
+	memset(frameBuffer->Data, 0, FRAME_BYTES);
 }

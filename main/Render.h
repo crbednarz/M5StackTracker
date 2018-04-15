@@ -3,13 +3,15 @@
 
 #include "Display.h"
 
-#define FRAME_BUFFER_SIZE DISPLAY_WIDTH * DISPLAY_HEIGHT
-#define FRAME_BUFFER_BYTES (FRAME_BUFFER_SIZE * sizeof(uint16_t))
-
+#define RENDER_ROW_STRIDE 2
+#define FRAME_ROWS (DISPLAY_HEIGHT / RENDER_ROW_STRIDE)
+#define FRAME_SIZE (DISPLAY_WIDTH * FRAME_ROWS)
+#define FRAME_BYTES (FRAME_SIZE * DISPLAY_BYTES_PER_PIXEL)
 
 typedef struct
 {
-	uint16_t Data[DISPLAY_WIDTH * DISPLAY_HEIGHT];
+	uint8_t RowOffset;
+	uint16_t Data[FRAME_SIZE];
 } FrameBuffer;
 
 

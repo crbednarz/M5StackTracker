@@ -9,15 +9,18 @@
 #include <driver/ledc.h>
 #include "ILI9341.h"
 #include "PeripheralConfig.h"
+#include "soc/spi_reg.h"
 
-
-spi_device_handle_t Display_SpiDeviceHandle;
-
-static void Display_PreTransferCallback(spi_transaction_t* transaction)
+typedef enum
 {
-	int dc = (int)transaction->user;
-	gpio_set_level(DISPLAY_PIN_DC, dc);	
-}
+	MESSAGE_COMMAND = 0,
+	MESSAGE_DATA = 1
+} MessageMode;
+
+lldesc_t* DmaDescription;
+spi_device_handle_t Display_SpiDeviceHandle;
+#define DMA_CHANNEL 1
+
 
 static void Display_SetupPins()
 {
@@ -64,9 +67,10 @@ static void Display_SetupPins()
 	ledc_update_duty(ledcChannelConfig.speed_mode, ledcChannelConfig.channel);
 }
 
-
+		
 static void Display_SetupSPI()
 {
+	DmaDescription = heap_caps_malloc(sizeof(lldesc_t), MALLOC_CAP_DMA);
 	spi_bus_config_t spiBugConfig =
 	{
 		.mosi_io_num = DISPLAY_PIN_MOSI,
@@ -81,13 +85,20 @@ static void Display_SetupSPI()
 		.clock_speed_hz = 60000000,
 		.mode = 0,
 		.spics_io_num = DISPLAY_PIN_CS, 
-		.queue_size = 7,
-		.pre_cb = Display_PreTransferCallback
+		.queue_size = 7
 	};
 	
-	spi_bus_initialize(VSPI_HOST, &spiBugConfig, 1);
+	spi_bus_initialize(VSPI_HOST, &spiBugConfig, DMA_CHANNEL);
 	
 	spi_bus_add_device(VSPI_HOST, &deviceInterfaceConfig, &Display_SpiDeviceHandle);
+	
+	// Sending a blank dummy command allows us to piggy-back off of esp-idf's SPI initialization code.
+	uint8_t command = 0x55;
+	spi_transaction_t transaction;
+	memset(&transaction, 0, sizeof(transaction));
+	transaction.length = 8;
+	transaction.tx_buffer = &command;
+	spi_device_transmit(Display_SpiDeviceHandle, &transaction);
 }
 
 
@@ -208,6 +219,16 @@ static void Display_SendInitializationCommands()
 }
 
 
+void Display_BeginWrite()
+{
+}
+
+
+void Display_EndWrite()
+{
+}
+
+
 void Display_Initialize()
 {
 	Display_SetupPins();
@@ -217,52 +238,72 @@ void Display_Initialize()
 	Display_SendInitializationCommands();
 }
 
+
+static void Display_Transmit(const uint8_t* data, size_t length, MessageMode mode)
+{
+	// Unfortunately esp-idf uses tasks and queues for individual transactions.
+	// This creates large waiting periods when trying to send individual messages, as is required when working with 
+	// sending interlaced pixel rows. So we use the actual registers here.
+	// It's not pretty, but it works.
+	
+	gpio_set_level(DISPLAY_PIN_DC, mode);	
+
+	spi_dev_t* spi = (spi_dev_t*)DR_REG_SPI3_BASE;
+	spicommon_dmaworkaround_idle(DMA_CHANNEL);
+
+	spi->slave.trans_done = 0; 
+	spi->dma_conf.val |= SPI_OUT_RST|SPI_IN_RST|SPI_AHBM_RST|SPI_AHBM_FIFO_RST;
+	spi->dma_out_link.start = 0;
+	spi->dma_in_link.start = 0;
+	spi->dma_conf.val &= ~(SPI_OUT_RST|SPI_IN_RST|SPI_AHBM_RST|SPI_AHBM_FIFO_RST);
+	spi->dma_conf.out_data_burst_en = 1;
+	spi->ctrl.val &= ~(SPI_FREAD_DUAL|SPI_FREAD_QUAD|SPI_FREAD_DIO|SPI_FREAD_QIO);
+	spi->user.val &= ~(SPI_FWRITE_DUAL|SPI_FWRITE_QUAD|SPI_FWRITE_DIO|SPI_FWRITE_QIO);
+
+	spi->dma_in_link.addr = 0;
+	spi->dma_in_link.start = 1;
+
+
+	spicommon_dmaworkaround_transfer_active(DMA_CHANNEL);
+	spicommon_setup_dma_desc_links(DmaDescription, length, data, false);
+	spi->user.usr_mosi_highpart = 0;
+	spi->dma_out_link.addr = (int)DmaDescription & 0xFFFFF;
+	spi->dma_out_link.start = 1;
+	spi->user.usr_mosi_highpart = 0;
+	spi->user.usr_dummy = 0;
+
+	spi->mosi_dlen.usr_mosi_dbitlen = length * 8;
+
+	spi->miso_dlen.usr_miso_dbitlen= 0;
+
+	spi->user.usr_mosi = 1;
+	spi->user.usr_miso = 0;
+
+	spi->cmd.usr=1;
+    while(spi->cmd.usr);
+
+}
+
+
 void Display_WriteCommand(uint8_t command)
 {
-	spi_transaction_t transaction;
-	memset(&transaction, 0, sizeof(transaction));
-	transaction.length = 8;
-	transaction.tx_buffer = &command;
-	transaction.user = (void*)0;
-	spi_device_transmit(Display_SpiDeviceHandle, &transaction);
+	Display_Transmit(&command, 1, MESSAGE_COMMAND);
 }
 
 
 void Display_WriteData(uint8_t data)
 {
-	spi_transaction_t transaction;
-	memset(&transaction, 0, sizeof(transaction));
-	transaction.length = 8;
-	transaction.tx_buffer = &data;
-	transaction.user = (void*)1;
-	spi_device_transmit(Display_SpiDeviceHandle, &transaction);
+	Display_Transmit(&data, 1, MESSAGE_DATA);
 }
 
 static void Display_WriteFragmentedDataArray(const uint8_t* data, size_t length)
 {
-	spi_transaction_t transaction;
-	memset(&transaction, 0, sizeof(transaction));
-	transaction.length = SPI_MAX_DMA_LEN * 8;
-	transaction.tx_buffer = data;
-	transaction.rxlength = 0;
-	transaction.user = (void*)1;
-	transaction.flags = 0;
-
 	int i;
 	for (i = 0; i + SPI_MAX_DMA_LEN < length; i += SPI_MAX_DMA_LEN)
-	{
-		transaction.tx_buffer = &data[i];
-		transaction.rxlength = 0;
-		spi_device_transmit(Display_SpiDeviceHandle, &transaction);
-	}
+		Display_Transmit(&data[i], SPI_MAX_DMA_LEN, MESSAGE_DATA);
 
 	if (i != length)
-	{
-		transaction.tx_buffer = &data[i];
-		transaction.length = (length - i - 1) * 8;
-		transaction.rxlength = 0;
-		spi_device_transmit(Display_SpiDeviceHandle, &transaction);
-	}
+		Display_Transmit(&data[i], (length - i - 1), MESSAGE_DATA);
 }
 
 
@@ -274,11 +315,5 @@ void Display_WriteDataArray(const uint8_t* data, size_t length)
 		return;
 	}
 
-	spi_transaction_t transaction;
-	memset(&transaction, 0, sizeof(transaction));
-	transaction.length = length * 8;
-	transaction.tx_buffer = data;
-	transaction.user = (void*)1;
-	transaction.flags = 0;
-	spi_device_transmit(Display_SpiDeviceHandle, &transaction);
+	Display_Transmit(data, length, MESSAGE_DATA);
 }
