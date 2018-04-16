@@ -27,6 +27,13 @@ inline uint16_t Render_CreateColor(uint8_t r, uint8_t g, uint8_t b)
 	return result;
 }
 
+
+inline size_t Render_FrameDataIndex(int x, int y)
+{
+	return ((y / RENDER_ROW_STRIDE) * DISPLAY_WIDTH + x);
+}
+
+
 FrameBuffer* Render_GetWorkingFrame();
 
 void Render_Initialize();
