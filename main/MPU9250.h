@@ -1,6 +1,8 @@
 #ifndef MPU9250_H
 #define MPU9250_H
 
+
+#define MPU9250_ADDRESS	 0x68
 #define AK8963_ADDRESS   0x0C
 #define WHO_AM_I_AK8963  0x00
 #define INFO             0x01

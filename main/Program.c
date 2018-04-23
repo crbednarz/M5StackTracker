@@ -15,6 +15,9 @@ static Stopwatch Timer;
 
 static void DisableAudio()
 {
+	// The M5Stack has some issues with its speaker making a lot of sounds when using the display.
+	// So for the time being we're just disabling it.
+	
 	gpio_set_direction(25, GPIO_MODE_OUTPUT);
 	gpio_set_level(25, 0);	
 }
@@ -57,6 +60,7 @@ void app_main()
 	while (1)
 	{
 		Stopwatch_Start(&Timer);
+		Motion_UpdateState();
 		Game_Update(&ActiveGame);
 		Game_Render(&ActiveGame);
 		Stopwatch_End(&Timer);

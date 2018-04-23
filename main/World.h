@@ -4,13 +4,12 @@
 #include "Render.h"
 #include <stdint.h>
 
-#define WORLD_WIDTH 64
-#define WORLD_HEIGHT 64
+#define WORLD_SIZE 64
 
 
 typedef struct
 {
-    uint8_t Heights[WORLD_WIDTH * WORLD_HEIGHT];
+    uint8_t Heights[WORLD_SIZE * WORLD_SIZE];
 } World;
 
 
