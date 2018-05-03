@@ -34,7 +34,7 @@ constexpr Color::Color(uint8_t r, uint8_t g, uint8_t b) :
 		(r & 0b11111000) |		// xxxxxxxxRRRRRxxx
 		((b >> 3) << 8) |		// xxxBBBBBxxxxxxxx
 		(g >> 5) |				// xxxxxxxxxxxxxGGG
-		((g & 0b11100) << 3))	// GGGxxxxxxxxxxxxx
+		((g & 0b11100) << 11))	// GGGxxxxxxxxxxxxx
 {
 
 }
