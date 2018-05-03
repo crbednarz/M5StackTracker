@@ -15,6 +15,7 @@ public:
 	InterlacedFrame& workingFrame();
 
 	void upload();
+	
 private:
 	InterlacedFrame _evenFrame;
 	InterlacedFrame _oddFrame;

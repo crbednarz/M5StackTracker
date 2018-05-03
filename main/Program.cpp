@@ -6,6 +6,7 @@
 #include "Display.hpp"
 #include "App.hpp"
 #include "Stopwatch.hpp"
+#include "I2CDevice.hpp"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -16,13 +17,15 @@ void Program::launch()
 {
 	Stopwatch stopwatch;
 	App app;
+	
 	// The M5Stack has some issues with its speaker making a lot of sounds when using the display.
 	// So for the time being we're just disabling it.
 	
 	gpio_set_direction(GPIO_NUM_25, GPIO_MODE_OUTPUT);
 	gpio_set_level(GPIO_NUM_25, 0);	
-
+ 
 	Display::initialize();
+	I2CDevice::initialize();
 	
 	xTaskCreatePinnedToCore(reinterpret_cast<TaskFunction_t>(&renderThreadEntryPoint), "RenderThread", 2048, NULL, 25, NULL, 1);
 

@@ -23,4 +23,5 @@
 #define DISPLAY_DMA_CHANNEL 1
 
 // Input (Gameboy FACE)
+#define GAMEBOY_ADDRESS 0x88
 #define INPUT_INT GPIO_NUM_5

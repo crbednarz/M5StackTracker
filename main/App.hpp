@@ -2,6 +2,7 @@
 
 
 #include "InterlacedFrame.hpp"
+#include "Gamepad.hpp"
 
 
 class App
@@ -13,5 +14,6 @@ public:
 	void render(InterlacedFrame& frame);
 
 private:
-
+	Gamepad _gamepad;
+	
 };
