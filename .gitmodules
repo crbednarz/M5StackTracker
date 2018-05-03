@@ -1,0 +1,6 @@
+[submodule "components/glm/glm"]
+	path = components/glm/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "components/gsl/gsl-lite"]
+	path = components/gsl/gsl-lite
+	url = https://github.com/martinmoene/gsl-lite.git

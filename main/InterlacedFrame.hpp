@@ -3,7 +3,7 @@
 
 #include "PeripheralConfig.hpp"
 #include "Color.hpp"
-#include "gsl-lite.hpp"
+#include "gsl.hpp"
 #include <array>
 
 

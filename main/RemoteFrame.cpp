@@ -1,7 +1,7 @@
 #include "RemoteFrame.hpp"
 #include "ILI9341.hpp"
 #include "Display.hpp"
-#include "gsl-lite.hpp"
+#include "gsl.hpp"
 
 
 RemoteFrame::RemoteFrame() :

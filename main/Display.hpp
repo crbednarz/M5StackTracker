@@ -2,7 +2,7 @@
 
 #include "PeripheralConfig.hpp"
 #include "rom/lldesc.h"
-#include "gsl-lite.hpp"
+#include "gsl.hpp"
 
 
 class Display
