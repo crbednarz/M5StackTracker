@@ -19,8 +19,7 @@ void App::render(InterlacedFrame& frame)
 	{
 		for (int x = 0; x < frame.columns(); x++)
 		{
-			frame.color(x, y) = Color(0, 255, 0);
+			frame.color(x, y) = Color();
 		}
 	}
-
 }

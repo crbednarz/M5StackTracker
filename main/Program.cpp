@@ -5,6 +5,7 @@
 #include "esp_spi_flash.h"
 #include "Display.hpp"
 #include "App.hpp"
+#include "Stopwatch.hpp"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -13,6 +14,7 @@ RemoteFrame Program::_remoteFrame;
 
 void Program::launch()
 {
+	Stopwatch stopwatch;
 	App app;
 	// The M5Stack has some issues with its speaker making a lot of sounds when using the display.
 	// So for the time being we're just disabling it.
@@ -24,11 +26,21 @@ void Program::launch()
 	
 	xTaskCreatePinnedToCore(reinterpret_cast<TaskFunction_t>(&renderThreadEntryPoint), "RenderThread", 2048, NULL, 25, NULL, 1);
 
+	printf("RAM left %d\n", esp_get_free_heap_size());
 	while (true)
 	{
+		stopwatch.start();
 		app.update();
 		app.render(_remoteFrame.workingFrame());
 		_remoteFrame.swap();
+		stopwatch.stop();
+
+		if (stopwatch.recordCount() == 100)
+		{
+			auto averageTimeElapsed = stopwatch.averageTime();
+			printf("Average Frame Time: %ffps\n", 1.0 / averageTimeElapsed);
+			stopwatch.reset();
+		}
 	}
 }
 
