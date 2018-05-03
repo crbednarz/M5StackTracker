@@ -37,7 +37,7 @@ void Display::writeData(uint8_t data)
 }
 
 
-void Display::writeData(gsl::span<uint8_t> data)
+void Display::writeData(gsl::span<const uint8_t> data)
 {
 	write(data, MessageMode::Data);
 }
@@ -235,7 +235,7 @@ void Display::sendInitialize()
 }
 
 
-void Display::write(gsl::span<uint8_t> message, MessageMode mode)
+void Display::write(gsl::span<const uint8_t> message, MessageMode mode)
 {
 	// Unfortunately esp-idf uses tasks and queues for individual transactions.
 	// This creates large waiting periods when trying to send individual messages, as is required when working with 

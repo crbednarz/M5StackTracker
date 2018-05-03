@@ -16,7 +16,7 @@ public:
 	static void initialize();
 	static void writeCommand(uint8_t command);
 	static void writeData(uint8_t data);
-	static void writeData(gsl::span<uint8_t> data);
+	static void writeData(gsl::span<const uint8_t> data);
 
 private:
 	static void setupSpi();
@@ -29,7 +29,7 @@ private:
 		Command = 0
 	};
 
-	static void write(gsl::span<uint8_t> data, MessageMode mode);
+	static void write(gsl::span<const uint8_t> data, MessageMode mode);
 
 	static lldesc_t* DmaDescription;
 };
