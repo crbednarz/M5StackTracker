@@ -3,6 +3,7 @@
 
 #include "InterlacedFrame.hpp"
 #include "Gamepad.hpp"
+#include "TrackingVisualizer.hpp"
 
 
 class App
@@ -15,5 +16,6 @@ public:
 
 private:
 	Gamepad _gamepad;
+	TrackingVisualizer _visualizer;
 	
 };

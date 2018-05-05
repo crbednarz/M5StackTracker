@@ -17,6 +17,8 @@ public:
 	constexpr bool operator==(Color rhs) const;
 	constexpr bool operator!=(Color rhs) const;
 
+	constexpr static Color fromBrightness(uint8_t brightness);
+
 private:
 	RawType _value;
 };
@@ -55,4 +57,10 @@ constexpr bool Color::operator==(Color rhs) const
 constexpr bool Color::operator!=(Color rhs) const
 {
 	return _value != rhs._value;
+}
+
+
+constexpr Color Color::fromBrightness(uint8_t brightness)
+{
+	return Color(brightness, brightness, brightness);
 }

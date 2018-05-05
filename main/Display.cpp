@@ -58,7 +58,8 @@ void Display::setupSpi()
 	deviceInterfaceConfig.mode = 0;
 	deviceInterfaceConfig.spics_io_num = DISPLAY_CS;
 	deviceInterfaceConfig.queue_size = 7;
-	
+	deviceInterfaceConfig.duty_cycle_pos = 1;
+	deviceInterfaceConfig.flags = SPI_DEVICE_NO_DUMMY | SPI_DEVICE_HALFDUPLEX;	
 	spi_bus_initialize(VSPI_HOST, &spiBugConfig, DISPLAY_DMA_CHANNEL);
 	
 	spi_device_handle_t deviceHandle = {};

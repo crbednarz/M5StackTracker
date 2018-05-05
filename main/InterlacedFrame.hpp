@@ -17,6 +17,8 @@ public:
 
 	gsl::span<const uint8_t> rawRow(int y) const;
 
+	void clear(Color color);
+
 	inline int rowOffset() const;
 
 	static constexpr size_t rows();
