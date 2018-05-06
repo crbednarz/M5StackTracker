@@ -4,7 +4,7 @@
 #include "InterlacedFrame.hpp"
 #include "glm/vec2.hpp"
 #include "glm/vec3.hpp"
-#include "MpuSensor.hpp"
+#include "MpuSystem.hpp"
 
 class TrackingVisualizer
 {
@@ -18,5 +18,5 @@ public:
 private:
 	void drawPoint(InterlacedFrame& frame, glm::ivec2 position, Color color);
 
-	MpuSensor _mpuSensor;
+	MpuSystem _mpu;
 };

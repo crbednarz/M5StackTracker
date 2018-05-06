@@ -3,8 +3,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 
-TrackingVisualizer::TrackingVisualizer() :
-	_mpuSensor(MpuSensor::create())
+TrackingVisualizer::TrackingVisualizer()
 {
 
 }
@@ -12,7 +11,7 @@ TrackingVisualizer::TrackingVisualizer() :
 
 void TrackingVisualizer::update()
 {
-	_mpuSensor.poll();
+	_mpu.poll();
 }
 
 
@@ -28,7 +27,7 @@ void TrackingVisualizer::draw(InterlacedFrame& frame)
 
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 25.0f));
 	
-	model *= glm::toMat4(_mpuSensor.quaternion());
+	model *= glm::toMat4(_mpu.quaternion());
 
 	for (int x = -5; x < 5; x++)
 	{
