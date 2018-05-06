@@ -15,9 +15,6 @@ RemoteFrame Program::_remoteFrame;
 
 void Program::launch()
 {
-	Stopwatch stopwatch;
-	App app;
-	
 	// The M5Stack has some issues with its speaker making a lot of sounds when using the display.
 	// So for the time being we're just disabling it.
 	
@@ -27,6 +24,10 @@ void Program::launch()
 	Display::initialize();
 	I2CDevice::initialize();
 	
+	Stopwatch stopwatch;
+	App app;
+	
+
 	xTaskCreatePinnedToCore(reinterpret_cast<TaskFunction_t>(&renderThreadEntryPoint), "RenderThread", 2048, NULL, 25, NULL, 1);
 
 	printf("RAM left %d\n", esp_get_free_heap_size());

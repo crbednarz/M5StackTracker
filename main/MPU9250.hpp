@@ -1,0 +1,158 @@
+#pragma once
+
+
+#include <stdint.h>
+
+
+#define MPU9250_ADDRESS	 uint8_t(0x68)
+#define AK8963_ADDRESS   uint8_t(0x0C)
+#define WHO_AM_I_AK8963  uint8_t(0x00)
+#define INFO             uint8_t(0x01)
+#define AK8963_ST1       uint8_t(0x02)
+#define AK8963_XOUT_L    uint8_t(0x03)
+#define AK8963_XOUT_H    uint8_t(0x04)
+#define AK8963_YOUT_L    uint8_t(0x05)
+#define AK8963_YOUT_H    uint8_t(0x06)
+#define AK8963_ZOUT_L    uint8_t(0x07)
+#define AK8963_ZOUT_H    uint8_t(0x08)
+#define AK8963_ST2       uint8_t(0x09)
+#define AK8963_CNTL      uint8_t(0x0A)
+#define AK8963_ASTC      uint8_t(0x0C)
+#define AK8963_I2CDIS    uint8_t(0x0F)
+#define AK8963_ASAX      uint8_t(0x10) 
+#define AK8963_ASAY      uint8_t(0x11)
+#define AK8963_ASAZ      uint8_t(0x12)
+#define SELF_TEST_X_GYRO uint8_t(0x00)
+#define SELF_TEST_Y_GYRO uint8_t(0x01)
+#define SELF_TEST_Z_GYRO uint8_t(0x02)
+#define SELF_TEST_X_ACCEL uint8_t(0x0D)
+#define SELF_TEST_Y_ACCEL uint8_t(0x0E)
+#define SELF_TEST_Z_ACCEL uint8_t(0x0F)
+#define SELF_TEST_A       uint8_t(0x10)
+#define XG_OFFSET_H       uint8_t(0x13)
+#define XG_OFFSET_L       uint8_t(0x14)
+#define YG_OFFSET_H       uint8_t(0x15)
+#define YG_OFFSET_L       uint8_t(0x16)
+#define ZG_OFFSET_H       uint8_t(0x17)
+#define ZG_OFFSET_L       uint8_t(0x18)
+#define SMPLRT_DIV        uint8_t(0x19)
+#define CONFIG            uint8_t(0x1A)
+#define GYRO_CONFIG       uint8_t(0x1B)
+#define ACCEL_CONFIG      uint8_t(0x1C)
+#define ACCEL_CONFIG2     uint8_t(0x1D)
+#define LP_ACCEL_ODR      uint8_t(0x1E)
+#define WOM_THR           uint8_t(0x1F)
+#define MOT_DUR           uint8_t(0x20)
+#define ZMOT_THR          uint8_t(0x21)
+#define ZRMOT_DUR         uint8_t(0x22)
+#define FIFO_EN            uint8_t(0x23)
+#define I2C_MST_CTRL       uint8_t(0x24)
+#define I2C_SLV0_ADDR      uint8_t(0x25)
+#define I2C_SLV0_REG       uint8_t(0x26)
+#define I2C_SLV0_CTRL      uint8_t(0x27)
+#define I2C_SLV1_ADDR      uint8_t(0x28)
+#define I2C_SLV1_REG       uint8_t(0x29)
+#define I2C_SLV1_CTRL      uint8_t(0x2A)
+#define I2C_SLV2_ADDR      uint8_t(0x2B)
+#define I2C_SLV2_REG       uint8_t(0x2C)
+#define I2C_SLV2_CTRL      uint8_t(0x2D)
+#define I2C_SLV3_ADDR      uint8_t(0x2E)
+#define I2C_SLV3_REG       uint8_t(0x2F)
+#define I2C_SLV3_CTRL      uint8_t(0x30)
+#define I2C_SLV4_ADDR      uint8_t(0x31)
+#define I2C_SLV4_REG       uint8_t(0x32)
+#define I2C_SLV4_DO        uint8_t(0x33)
+#define I2C_SLV4_CTRL      uint8_t(0x34)
+#define I2C_SLV4_DI        uint8_t(0x35)
+#define I2C_MST_STATUS     uint8_t(0x36)
+#define INT_PIN_CFG        uint8_t(0x37)
+#define INT_ENABLE         uint8_t(0x38)
+#define DMP_INT_STATUS     uint8_t(0x39)
+#define INT_STATUS         uint8_t(0x3A)
+#define ACCEL_XOUT_H       uint8_t(0x3B)
+#define ACCEL_XOUT_L       uint8_t(0x3C)
+#define ACCEL_YOUT_H       uint8_t(0x3D)
+#define ACCEL_YOUT_L       uint8_t(0x3E)
+#define ACCEL_ZOUT_H       uint8_t(0x3F)
+#define ACCEL_ZOUT_L       uint8_t(0x40)
+#define TEMP_OUT_H         uint8_t(0x41)
+#define TEMP_OUT_L         uint8_t(0x42)
+#define GYRO_XOUT_H        uint8_t(0x43)
+#define GYRO_XOUT_L        uint8_t(0x44)
+#define GYRO_YOUT_H        uint8_t(0x45)
+#define GYRO_YOUT_L        uint8_t(0x46)
+#define GYRO_ZOUT_H        uint8_t(0x47)
+#define GYRO_ZOUT_L        uint8_t(0x48)
+#define EXT_SENS_DATA_00   uint8_t(0x49)
+#define EXT_SENS_DATA_01   uint8_t(0x4A)
+#define EXT_SENS_DATA_02   uint8_t(0x4B)
+#define EXT_SENS_DATA_03   uint8_t(0x4C)
+#define EXT_SENS_DATA_04   uint8_t(0x4D)
+#define EXT_SENS_DATA_05   uint8_t(0x4E)
+#define EXT_SENS_DATA_06   uint8_t(0x4F)
+#define EXT_SENS_DATA_07   uint8_t(0x50)
+#define EXT_SENS_DATA_08   uint8_t(0x51)
+#define EXT_SENS_DATA_09   uint8_t(0x52)
+#define EXT_SENS_DATA_10   uint8_t(0x53)
+#define EXT_SENS_DATA_11   uint8_t(0x54)
+#define EXT_SENS_DATA_12   uint8_t(0x55)
+#define EXT_SENS_DATA_13   uint8_t(0x56)
+#define EXT_SENS_DATA_14   uint8_t(0x57)
+#define EXT_SENS_DATA_15   uint8_t(0x58)
+#define EXT_SENS_DATA_16   uint8_t(0x59)
+#define EXT_SENS_DATA_17   uint8_t(0x5A)
+#define EXT_SENS_DATA_18   uint8_t(0x5B)
+#define EXT_SENS_DATA_19   uint8_t(0x5C)
+#define EXT_SENS_DATA_20   uint8_t(0x5D)
+#define EXT_SENS_DATA_21   uint8_t(0x5E)
+#define EXT_SENS_DATA_22   uint8_t(0x5F)
+#define EXT_SENS_DATA_23   uint8_t(0x60)
+#define MOT_DETECT_STATUS  uint8_t(0x61)
+#define I2C_SLV0_DO        uint8_t(0x63)
+#define I2C_SLV1_DO        uint8_t(0x64)
+#define I2C_SLV2_DO        uint8_t(0x65)
+#define I2C_SLV3_DO        uint8_t(0x66)
+#define I2C_MST_DELAY_CTRL uint8_t(0x67)
+#define SIGNAL_PATH_RESET  uint8_t(0x68)
+#define MOT_DETECT_CTRL    uint8_t(0x69)
+#define USER_CTRL          uint8_t(0x6A)
+#define PWR_MGMT_1         uint8_t(0x6B)
+#define PWR_MGMT_2         uint8_t(0x6C)
+#define DMP_BANK           uint8_t(0x6D)
+#define DMP_RW_PNT         uint8_t(0x6E)
+#define DMP_REG            uint8_t(0x6F)
+#define DMP_REG_1          uint8_t(0x70)
+#define DMP_REG_2          uint8_t(0x71)
+#define FIFO_COUNTH        uint8_t(0x72)
+#define FIFO_COUNTL        uint8_t(0x73)
+#define FIFO_R_W           uint8_t(0x74)
+#define XA_OFFSET_H        uint8_t(0x77)
+#define XA_OFFSET_L        uint8_t(0x78)
+#define YA_OFFSET_H        uint8_t(0x7A)
+#define YA_OFFSET_L        uint8_t(0x7B)
+#define ZA_OFFSET_H        uint8_t(0x7D)
+#define ZA_OFFSET_L        uint8_t(0x7E)
+
+
+
+enum class AccelScale
+{
+	AFS_2G = 0,
+	AFS_4G,
+	AFS_8G,
+	AFS_16G
+};
+
+enum class GyroScale 
+{
+	GFS_250DPS = 0,
+	GFS_500DPS,
+	GFS_1000DPS,
+	GFS_2000DPS
+};
+
+enum class CompassScale 
+{
+	MFS_14BITS = 0,
+	MFS_16BITS
+};

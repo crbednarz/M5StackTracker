@@ -12,7 +12,7 @@
 #include "soc/spi_reg.h"
 
 
-lldesc_t* Display::DmaDescription = nullptr;
+lldesc_t* Display::_dmaDescription = nullptr;
 
 
 void Display::initialize()
@@ -45,7 +45,7 @@ void Display::writeData(gsl::span<const uint8_t> data)
 
 void Display::setupSpi()
 {
-	DmaDescription = reinterpret_cast<lldesc_t*>(heap_caps_malloc(sizeof(lldesc_t), MALLOC_CAP_DMA));
+	_dmaDescription = reinterpret_cast<lldesc_t*>(heap_caps_malloc(sizeof(lldesc_t), MALLOC_CAP_DMA));
 	spi_bus_config_t spiBugConfig = {};
 	spiBugConfig.mosi_io_num = DISPLAY_MOSI;
 	spiBugConfig.miso_io_num = -1;
@@ -246,8 +246,7 @@ void Display::write(gsl::span<const uint8_t> message, MessageMode mode)
 	gpio_set_level(DISPLAY_DC, static_cast<uint32_t>(mode));	
 
 	spi_dev_t* spi = (spi_dev_t*)DR_REG_SPI3_BASE;
-	spicommon_dmaworkaround_idle(DISPLAY_DMA_CHANNEL);
-
+	
 	spi->slave.trans_done = 0; 
 	spi->dma_conf.val |= SPI_OUT_RST|SPI_IN_RST|SPI_AHBM_RST|SPI_AHBM_FIFO_RST;
 	spi->dma_out_link.start = 0;
@@ -261,10 +260,9 @@ void Display::write(gsl::span<const uint8_t> message, MessageMode mode)
 	spi->dma_in_link.start = 1;
 
 
-	spicommon_dmaworkaround_transfer_active(DISPLAY_DMA_CHANNEL);
-	spicommon_setup_dma_desc_links(DmaDescription, message.size_bytes(), message.data(), false);
+	spicommon_setup_dma_desc_links(_dmaDescription, message.size_bytes(), message.data(), false);
 	spi->user.usr_mosi_highpart = 0;
-	spi->dma_out_link.addr = (int)DmaDescription & 0xFFFFF;
+	spi->dma_out_link.addr = (int)_dmaDescription & 0xFFFFF;
 	spi->dma_out_link.start = 1;
 	spi->user.usr_mosi_highpart = 0;
 	spi->user.usr_dummy = 0;

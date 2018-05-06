@@ -31,7 +31,7 @@ private:
 
 	static void write(gsl::span<const uint8_t> data, MessageMode mode);
 
-	static lldesc_t* DmaDescription;
+	static lldesc_t* _dmaDescription;
 };
 
 
