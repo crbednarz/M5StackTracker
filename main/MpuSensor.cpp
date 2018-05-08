@@ -143,6 +143,8 @@ void MpuSensor::calibrate()
 	write<uint8_t>(YA_OFFSET_L, (rawAccelBias.y & 0xFF) | yMask);
 	write<uint8_t>(ZA_OFFSET_H, (rawAccelBias.z >> 8) & 0xFF);
 	write<uint8_t>(ZA_OFFSET_L, (rawAccelBias.z & 0xFF) | zMask);
+
+	_accelBias = glm::vec3(accelBiasSum) / 16384.0f;
 }
 
 
@@ -162,7 +164,7 @@ glm::vec3 MpuSensor::readAccelState() const
 
 	state *= 2.0f / 32768.0f;
 	
-	return state;
+	return state - _accelBias;
 }
 
 

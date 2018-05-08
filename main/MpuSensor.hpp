@@ -19,6 +19,7 @@ private:
 	I2CDevice _device;
 	glm::vec3 _accelState;
 	glm::vec3 _gyroState;
+	glm::vec3 _accelBias;
 	
 	template <typename T>
 	void write(uint8_t address, T data) const;
