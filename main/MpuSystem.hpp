@@ -25,7 +25,6 @@ public:
 private:	
 	TickType_t _lastUpdate;
 	MpuSensor _mpuSensor;
-	CompassSensor _compassSensor;
 	glm::quat _quaternion;
 
 	glm::vec3 _rotation;

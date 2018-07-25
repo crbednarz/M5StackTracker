@@ -18,15 +18,18 @@ MpuSensor::MpuSensor() :
 void MpuSensor::poll()
 {
 	auto rawFifoCount = read<glm::u8vec2>(FIFO_COUNTH);
-    auto fifoCount = (static_cast<uint16_t>(rawFifoCount.x) << 8) | rawFifoCount.y;
-    auto packetCount = fifoCount / 12;
+    auto fifoCount = (static_cast<uint16_t>(rawFifoCount.x) <<  8) | rawFifoCount.y;
+    auto packetCount = fifoCount / 13;
 
-	for (int i = 0; i < packetCount; i++)
+	printf("%i", fifoCount);
+	const uint8_t header = FIFO_R_W;
+	_device.read(gsl::span<const uint8_t>(&header, 1), gsl::span<uint8_t>(_fifoBuffer.data(), fifoCount));
+	
+	/*for (int i = 0; i < packetCount; i++)
     {
     	const uint8_t header = FIFO_R_W;
-        _device.read(gsl::span<const uint8_t>(&header, 1), gsl::span<uint8_t>(_fifoBuffer.data() + i * 12, 12));
-	}
-
+        _device.read(gsl::span<const uint8_t>(&header, 1), gsl::span<uint8_t>(_fifoBuffer.data() + i * 19, 19));
+	}*/
 	_fifoEntries = packetCount;
 }
 
@@ -35,7 +38,7 @@ bool MpuSensor::popFifoEntry(glm::vec3& accelState, glm::vec3& gyroState)
 	if (_fifoEntries == 0)
 		return false;
 
-	gsl::span<uint8_t> rawPacket(_fifoBuffer.data() + (_fifoEntries - 1) * 12, 12);
+	gsl::span<uint8_t> rawPacket(_fifoBuffer.data() + (_fifoEntries - 1) * 13, 13);
 
 	glm::i16vec3 accelReading;
 	accelReading.x = (static_cast<int16_t>(rawPacket[0]) << 8) | rawPacket[1];
@@ -87,10 +90,27 @@ void MpuSensor::initialize()
 	write<uint8_t>(INT_PIN_CFG, 0x22);
 	write<uint8_t>(INT_ENABLE, 0x01);
 	
-	write<uint8_t>(USER_CTRL, 0x40);
-	write<uint8_t>(FIFO_EN, 0x78);
+	write<uint8_t>(USER_CTRL, 0x40 | 0x20);
+	write<uint8_t>(I2C_MST_CTRL, 0x0D);
+	write<uint8_t>(FIFO_EN, 0x79);
+
+	write<uint8_t>(I2C_SLV0_ADDR, AK8963_ADDRESS | 0x80);
+	write<uint8_t>(I2C_SLV0_CTRL, 0x81);
 	
 	vTaskDelay(100 / portTICK_RATE_MS);
+
+	compassWrite<uint8_t>(AK8963_CNTL, 0);
+	compassWrite<uint8_t>(AK8963_CNTL2, 1);
+
+	vTaskDelay(100 / portTICK_RATE_MS);
+
+	
+	compassWrite<uint8_t>(AK8963_CNTL, 0x0F);
+
+	vTaskDelay(100 / portTICK_RATE_MS);
+
+
+	printf("Test: %i\n", compassRead<uint8_t>(0x00));
 }
 
 
@@ -182,4 +202,47 @@ void MpuSensor::calibrate()
 	write<uint8_t>(ZA_OFFSET_L, (rawAccelBias.z & 0xFF) | zMask);
 
 	_accelBias = glm::vec3(accelBiasSum) / 16384.0f;
+}
+
+
+
+template <typename T>
+void MpuSensor::write(uint8_t address, T data) const
+{
+	_device.write(gsl::span<const uint8_t>(&address, 1), gsl::span<const uint8_t>(reinterpret_cast<uint8_t*>(&data), sizeof(T)));
+}
+
+template <typename T>
+void MpuSensor::compassWrite(uint8_t address, T data) const
+{
+	write<uint8_t>(I2C_SLV0_ADDR, AK8963_ADDRESS);
+	write<uint8_t>(I2C_SLV0_REG, address);
+	write<uint8_t>(I2C_SLV0_CTRL, 0x80 | sizeof(T));
+	write<T>(I2C_SLV0_DO, data);
+	
+	vTaskDelay(10 / portTICK_RATE_MS);
+}
+
+
+
+template <typename T>
+T MpuSensor::read(uint8_t address) const
+{
+	T output;
+	_device.read(gsl::span<const uint8_t>(&address, 1), gsl::span<uint8_t>(reinterpret_cast<uint8_t*>(&output), sizeof(T)));
+
+	return output;
+}
+
+
+template <typename T>
+T MpuSensor::compassRead(uint8_t address) const
+{
+	write<uint8_t>(I2C_SLV0_ADDR, AK8963_ADDRESS | 0x80);
+	write<uint8_t>(I2C_SLV0_REG, address);
+	write<uint8_t>(I2C_SLV0_CTRL, 0x80 | sizeof(T));
+	
+	vTaskDelay(10 / portTICK_RATE_MS);
+	
+	return read<T>(EXT_SENS_DATA_00);
 }

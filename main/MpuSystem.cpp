@@ -14,20 +14,19 @@ MpuSystem::MpuSystem() :
 void MpuSystem::poll()
 {
 	_mpuSensor.poll();
-	_compassSensor.poll();
+	//_compassSensor.poll();
 
 	glm::vec3 accelState;
 	glm::vec3 gyroState;
-	glm::vec3 compassState = _compassSensor.state();
+	//glm::vec3 compassState = _compassSensor.state();
 
 	while (_mpuSensor.popFifoEntry(accelState, gyroState))
 	{
-		printf("%f %f %f\n", compassState.x, compassState.y, compassState.z);
+		printf("%f %f %f\n", accelState.x, accelState.y, accelState.z);
 
-		MadgwickAHRSupdate(
+		MadgwickAHRSupdateIMU(
 			gyroState.x, gyroState.y, gyroState.z,
-			accelState.x, accelState.y, accelState.z,
-			compassState.y, compassState.x, compassState.z);
+			accelState.x, accelState.y, accelState.z);
 	}
 	
 

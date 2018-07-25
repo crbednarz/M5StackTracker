@@ -26,7 +26,14 @@ private:
 	void write(uint8_t address, T data) const;
 
 	template <typename T>
+	void compassWrite(uint8_t address, T data) const;
+	
+	template <typename T>
 	T read(uint8_t address) const;
+
+	template <typename T>
+	T compassRead(uint8_t address) const;
+
 
 
 	void initialize();
@@ -37,21 +44,4 @@ private:
 inline size_t MpuSensor::fifoEntries() const
 {
 	return _fifoEntries;
-}
-
-
-template <typename T>
-void MpuSensor::write(uint8_t address, T data) const
-{
-	_device.write(gsl::span<const uint8_t>(&address, 1), gsl::span<const uint8_t>(reinterpret_cast<uint8_t*>(&data), sizeof(T)));
-}
-
-
-template <typename T>
-T MpuSensor::read(uint8_t address) const
-{
-	T output;
-	_device.read(gsl::span<const uint8_t>(&address, 1), gsl::span<uint8_t>(reinterpret_cast<uint8_t*>(&output), sizeof(T)));
-
-	return output;
 }

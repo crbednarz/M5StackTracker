@@ -46,4 +46,5 @@ void CompassSensor::initialize()
 	write<uint8_t>(AK8963_CNTL, (static_cast<uint8_t>(CompassScale::MFS_16BITS) << 4) | 0x02);
 
 	vTaskDelay(10 / portTICK_RATE_MS);
+	poll();
 }
