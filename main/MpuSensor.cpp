@@ -7,8 +7,8 @@
 
 MpuSensor::MpuSensor() :
 	_device(MPU9250_ADDRESS),
-	_accelState(0.0f),
-	_gyroState(0.0f)
+	_fifoEntries(0),
+	_accelBias(0.0f)
 {
 	calibrate();
 	initialize();
@@ -17,10 +17,43 @@ MpuSensor::MpuSensor() :
 
 void MpuSensor::poll()
 {
-	_accelState = readAccelState();
-	_gyroState = readGyroState();
+	auto rawFifoCount = read<glm::u8vec2>(FIFO_COUNTH);
+    auto fifoCount = (static_cast<uint16_t>(rawFifoCount.x) << 8) | rawFifoCount.y;
+    auto packetCount = fifoCount / 12;
+
+	for (int i = 0; i < packetCount; i++)
+    {
+    	const uint8_t header = FIFO_R_W;
+        _device.read(gsl::span<const uint8_t>(&header, 1), gsl::span<uint8_t>(_fifoBuffer.data() + i * 12, 12));
+	}
+
+	_fifoEntries = packetCount;
 }
 
+bool MpuSensor::popFifoEntry(glm::vec3& accelState, glm::vec3& gyroState)
+{
+	if (_fifoEntries == 0)
+		return false;
+
+	gsl::span<uint8_t> rawPacket(_fifoBuffer.data() + (_fifoEntries - 1) * 12, 12);
+
+	glm::i16vec3 accelReading;
+	accelReading.x = (static_cast<int16_t>(rawPacket[0]) << 8) | rawPacket[1];
+	accelReading.y = (static_cast<int16_t>(rawPacket[2]) << 8) | rawPacket[3];
+	accelReading.z = (static_cast<int16_t>(rawPacket[4]) << 8) | rawPacket[5];
+
+	glm::i16vec3 gyroReading;
+	gyroReading.x = (static_cast<int16_t>(rawPacket[6]) << 8) | rawPacket[7];
+	gyroReading.y = (static_cast<int16_t>(rawPacket[8]) << 8) | rawPacket[9];
+	gyroReading.z = (static_cast<int16_t>(rawPacket[10]) << 8) | rawPacket[11];
+
+	accelState = glm::vec3(accelReading) * (2.0f / 32768.0f) - _accelBias;
+	gyroState = glm::vec3(gyroReading) * ((250.0f / 32768.0f) * (glm::pi<float>() / 180.0f));
+	
+	_fifoEntries--;
+
+	return true;
+}
 
 void MpuSensor::initialize()
 {
@@ -28,6 +61,7 @@ void MpuSensor::initialize()
 
 	write<uint8_t>(PWR_MGMT_1, 0x00);
 	vTaskDelay(100 / portTICK_RATE_MS);
+
 
 	write<uint8_t>(PWR_MGMT_1, 0x01);
 	vTaskDelay(200 / portTICK_RATE_MS);
@@ -52,6 +86,9 @@ void MpuSensor::initialize()
 	
 	write<uint8_t>(INT_PIN_CFG, 0x22);
 	write<uint8_t>(INT_ENABLE, 0x01);
+	
+	write<uint8_t>(USER_CTRL, 0x40);
+	write<uint8_t>(FIFO_EN, 0x78);
 	
 	vTaskDelay(100 / portTICK_RATE_MS);
 }
@@ -145,43 +182,4 @@ void MpuSensor::calibrate()
 	write<uint8_t>(ZA_OFFSET_L, (rawAccelBias.z & 0xFF) | zMask);
 
 	_accelBias = glm::vec3(accelBiasSum) / 16384.0f;
-}
-
-
-glm::vec3 MpuSensor::readAccelState() const
-{
-	uint8_t header = ACCEL_XOUT_H;
-	std::array<uint8_t, 6> output;
-	_device.read(gsl::span<const uint8_t>(&header, 1), gsl::span<uint8_t>(output.data(), output.size()));
-	std::swap(output[0], output[1]);
-	std::swap(output[2], output[3]);
-	std::swap(output[4], output[5]);
-
-	glm::vec3 state;
-	state.x = reinterpret_cast<int16_t&>(output[0]);
-	state.y = reinterpret_cast<int16_t&>(output[2]);
-	state.z = reinterpret_cast<int16_t&>(output[4]);
-
-	state *= 2.0f / 32768.0f;
-	
-	return state - _accelBias;
-}
-
-
-glm::vec3 MpuSensor::readGyroState() const
-{
-	uint8_t header = GYRO_XOUT_H;
-	std::array<uint8_t, 6> output;
-	_device.read(gsl::span<const uint8_t>(&header, 1), gsl::span<uint8_t>(output.data(), output.size()));
-	std::swap(output[0], output[1]);
-	std::swap(output[2], output[3]);
-	std::swap(output[4], output[5]);
-	
-	glm::vec3 state;
-	state.x = reinterpret_cast<int16_t&>(output[0]);
-	state.y = reinterpret_cast<int16_t&>(output[2]);
-	state.z = reinterpret_cast<int16_t&>(output[4]);
-
-	state *= (250.0f / 32768.0f) * (glm::pi<float>() / 180.0f);
-	return state;
 }

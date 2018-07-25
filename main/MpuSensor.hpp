@@ -1,6 +1,6 @@
 #pragma once
 
-
+#include <array>
 #include "I2CDevice.hpp"
 #include "glm/glm.hpp"
 
@@ -12,13 +12,14 @@ public:
 
 	void poll();
 
-	inline glm::vec3 accelState() const;
-	inline glm::vec3 gyroState() const;
+	bool popFifoEntry(glm::vec3& accelState, glm::vec3& gyroState);
+
+	size_t fifoEntries() const;
 
 private:
 	I2CDevice _device;
-	glm::vec3 _accelState;
-	glm::vec3 _gyroState;
+	std::array<uint8_t, 512> _fifoBuffer;
+	size_t _fifoEntries;
 	glm::vec3 _accelBias;
 	
 	template <typename T>
@@ -27,24 +28,15 @@ private:
 	template <typename T>
 	T read(uint8_t address) const;
 
+
 	void initialize();
 	void calibrate();
-
-	glm::vec3 readAccelState() const;
-	glm::vec3 readGyroState() const;
-
 };
 
 
-inline glm::vec3 MpuSensor::accelState() const
+inline size_t MpuSensor::fifoEntries() const
 {
-	return _accelState;
-}
-
-
-inline glm::vec3 MpuSensor::gyroState() const
-{
-	return _gyroState;
+	return _fifoEntries;
 }
 
 
