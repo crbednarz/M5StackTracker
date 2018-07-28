@@ -8,37 +8,35 @@
 MpuSensor::MpuSensor() :
 	_device(MPU9250_ADDRESS),
 	_fifoEntries(0),
-	_accelBias(0.0f)
+	_accelBias(0.0f),
+	_gyroBias(0.0f),
+	_compassBias(0.0f)
 {
 	calibrate();
 	initialize();
 }
 
+const size_t FIFO_PACKET_SIZE = 19;
+
 
 void MpuSensor::poll()
 {
 	auto rawFifoCount = read<glm::u8vec2>(FIFO_COUNTH);
-    auto fifoCount = (static_cast<uint16_t>(rawFifoCount.x) <<  8) | rawFifoCount.y;
-    auto packetCount = fifoCount / 13;
+	auto fifoCount = (static_cast<uint16_t>(rawFifoCount.x) <<  8) | rawFifoCount.y;
+	auto packetCount = fifoCount / FIFO_PACKET_SIZE;
 
-	printf("%i", fifoCount);
 	const uint8_t header = FIFO_R_W;
 	_device.read(gsl::span<const uint8_t>(&header, 1), gsl::span<uint8_t>(_fifoBuffer.data(), fifoCount));
 	
-	/*for (int i = 0; i < packetCount; i++)
-    {
-    	const uint8_t header = FIFO_R_W;
-        _device.read(gsl::span<const uint8_t>(&header, 1), gsl::span<uint8_t>(_fifoBuffer.data() + i * 19, 19));
-	}*/
 	_fifoEntries = packetCount;
 }
 
-bool MpuSensor::popFifoEntry(glm::vec3& accelState, glm::vec3& gyroState)
+bool MpuSensor::popFifoEntry(glm::vec3& accelState, glm::vec3& gyroState, glm::vec3& compassState)
 {
 	if (_fifoEntries == 0)
 		return false;
 
-	gsl::span<uint8_t> rawPacket(_fifoBuffer.data() + (_fifoEntries - 1) * 13, 13);
+	gsl::span<uint8_t> rawPacket(_fifoBuffer.data() + (_fifoEntries - 1) * FIFO_PACKET_SIZE, FIFO_PACKET_SIZE);
 
 	glm::i16vec3 accelReading;
 	accelReading.x = (static_cast<int16_t>(rawPacket[0]) << 8) | rawPacket[1];
@@ -50,9 +48,15 @@ bool MpuSensor::popFifoEntry(glm::vec3& accelState, glm::vec3& gyroState)
 	gyroReading.y = (static_cast<int16_t>(rawPacket[8]) << 8) | rawPacket[9];
 	gyroReading.z = (static_cast<int16_t>(rawPacket[10]) << 8) | rawPacket[11];
 
-	accelState = glm::vec3(accelReading) * (2.0f / 32768.0f) - _accelBias;
+	glm::i16vec3 compassReading;
+	compassReading.x = (static_cast<int16_t>(rawPacket[13]) << 8) | rawPacket[12];
+	compassReading.y = (static_cast<int16_t>(rawPacket[15]) << 8) | rawPacket[14];
+	compassReading.z = (static_cast<int16_t>(rawPacket[17]) << 8) | rawPacket[16];
+
+	accelState = glm::vec3(accelReading) * (2.0f / 32768.0f);
 	gyroState = glm::vec3(gyroReading) * ((250.0f / 32768.0f) * (glm::pi<float>() / 180.0f));
-	
+	compassState = glm::vec3(compassReading) * (10.0f * 4912.0f / 32760.0f);
+
 	_fifoEntries--;
 
 	return true;
@@ -87,30 +91,49 @@ void MpuSensor::initialize()
 	accelConfig2 |= 0x03;
 	write<uint8_t>(ACCEL_CONFIG2, accelConfig2);
 	
-	write<uint8_t>(INT_PIN_CFG, 0x22);
-	write<uint8_t>(INT_ENABLE, 0x01);
+	write<uint8_t>(INT_ENABLE, 0x00);
 	
 	write<uint8_t>(USER_CTRL, 0x40 | 0x20);
 	write<uint8_t>(I2C_MST_CTRL, 0x0D);
-	write<uint8_t>(FIFO_EN, 0x79);
+	write<uint8_t>(FIFO_EN, 0x40 | 0x20 | 0x10 | 0x08 | 0x01);
 
 	write<uint8_t>(I2C_SLV0_ADDR, AK8963_ADDRESS | 0x80);
 	write<uint8_t>(I2C_SLV0_CTRL, 0x81);
+
+	
+	vTaskDelay(100 / portTICK_RATE_MS);
+
+	// Shutdown compass
+	compassWrite<uint8_t>(AK8963_CNTL1, 0x0);
+
+	vTaskDelay(100 / portTICK_RATE_MS);
+
+	// Reset compass
+	compassWrite<uint8_t>(AK8963_CNTL2, 0x1);
+
+	vTaskDelay(100 / portTICK_RATE_MS);
+
+
+	compassWrite<uint8_t>(AK8963_CNTL1, 0x0F);
 	
 	vTaskDelay(100 / portTICK_RATE_MS);
 
-	compassWrite<uint8_t>(AK8963_CNTL, 0);
-	compassWrite<uint8_t>(AK8963_CNTL2, 1);
+	auto bias = compassRead<glm::u8vec3>(AK8963_ASAX);
+	_compassBias = (glm::vec3(bias) - 128.0f) / 256.0f + 1.0f;
+	compassWrite<uint8_t>(AK8963_CNTL1, 0x00);
+
 
 	vTaskDelay(100 / portTICK_RATE_MS);
 
+	compassWrite<uint8_t>(AK8963_CNTL1, (static_cast<uint8_t>(CompassScale::MFS_16BITS) << 4) | 0b0110);
+
+
+	write<uint8_t>(I2C_SLV0_ADDR, AK8963_ADDRESS | 0x80);
+	write<uint8_t>(I2C_SLV0_REG, AK8963_XOUT_L);
+	write<uint8_t>(I2C_SLV0_CTRL, 0x80 | 7);
 	
-	compassWrite<uint8_t>(AK8963_CNTL, 0x0F);
+	vTaskDelay(500 / portTICK_RATE_MS);
 
-	vTaskDelay(100 / portTICK_RATE_MS);
-
-
-	printf("Test: %i\n", compassRead<uint8_t>(0x00));
 }
 
 
@@ -139,69 +162,6 @@ void MpuSensor::calibrate()
 	write<uint8_t>(USER_CTRL, 0x40);
 	write<uint8_t>(FIFO_EN, 0x78);
 	vTaskDelay(40 / portTICK_RATE_MS);
-
-	write<uint8_t>(FIFO_EN, 0x00);
-	auto rawFifoCount = read<glm::u8vec2>(FIFO_COUNTH);
-	auto fifoCount = (static_cast<uint16_t>(rawFifoCount.x) << 8) | rawFifoCount.y;
-	auto packetCount = fifoCount / 12;
-
-	glm::i16vec3 accelBiasSum(0);
-	glm::i16vec3 gyroBiasSum(0);
-	for (int i = 0; i < packetCount; i++)
-	{
-		std::array<uint8_t, 12> rawPacket;
-		uint8_t header = FIFO_R_W;
-
-		_device.read(gsl::span<const uint8_t>(&header, 1), gsl::span<uint8_t>(rawPacket.data(), rawPacket.size()));
-		
-		glm::i16vec3 accelReading;
-		accelReading.x = (static_cast<int16_t>(rawPacket[0]) << 8) | rawPacket[1];
-		accelReading.y = (static_cast<int16_t>(rawPacket[2]) << 8) | rawPacket[3];
-		accelReading.z = (static_cast<int16_t>(rawPacket[4]) << 8) | rawPacket[5];
-
-		glm::i16vec3 gyroReading;
-		gyroReading.x = (static_cast<int16_t>(rawPacket[6]) << 8) | rawPacket[7];
-		gyroReading.y = (static_cast<int16_t>(rawPacket[8]) << 8) | rawPacket[9];
-		gyroReading.z = (static_cast<int16_t>(rawPacket[10]) << 8) | rawPacket[11];
-		
-		accelBiasSum += accelReading;
-		gyroBiasSum += gyroReading;
-	}
-
-	accelBiasSum /= packetCount;
-	gyroBiasSum /= packetCount;
-
-	if(accelBiasSum.z > 0) 
-		accelBiasSum.z -= 16384;
-	else
-		accelBiasSum.z += 16384;
-
-	write<uint8_t>(XG_OFFSET_H, (-gyroBiasSum.x / 4 >> 8) & 0xFF);
-	write<uint8_t>(XG_OFFSET_L, (-gyroBiasSum.x / 4) & 0xFF);
-	write<uint8_t>(YG_OFFSET_H, (-gyroBiasSum.y / 4 >> 8) & 0xFF);
-	write<uint8_t>(YG_OFFSET_L, (-gyroBiasSum.y / 4) & 0xFF);
-	write<uint8_t>(ZG_OFFSET_H, (-gyroBiasSum.z / 4 >> 8) & 0xFF);
-	write<uint8_t>(ZG_OFFSET_L, (-gyroBiasSum.z / 4) & 0xFF);
-
-	glm::ivec3 rawAccelBias;
-	rawAccelBias.x = (read<int8_t>(XA_OFFSET_H) << 8) | read<int8_t>(XA_OFFSET_L);
-	rawAccelBias.y = (read<int8_t>(YA_OFFSET_H) << 8) | read<int8_t>(YA_OFFSET_L);
-	rawAccelBias.z = (read<int8_t>(ZA_OFFSET_H) << 8) | read<int8_t>(ZA_OFFSET_L);
-
-	uint8_t xMask = rawAccelBias.x & 1;
-	uint8_t yMask = rawAccelBias.y & 1;
-	uint8_t zMask = rawAccelBias.z & 1;
-	
-	rawAccelBias -= accelBiasSum / glm::i16vec3(8);
-
-	write<uint8_t>(XA_OFFSET_H, (rawAccelBias.x >> 8) & 0xFF);
-	write<uint8_t>(XA_OFFSET_L, (rawAccelBias.x & 0xFF) | xMask);
-	write<uint8_t>(YA_OFFSET_H, (rawAccelBias.y >> 8) & 0xFF);
-	write<uint8_t>(YA_OFFSET_L, (rawAccelBias.y & 0xFF) | yMask);
-	write<uint8_t>(ZA_OFFSET_H, (rawAccelBias.z >> 8) & 0xFF);
-	write<uint8_t>(ZA_OFFSET_L, (rawAccelBias.z & 0xFF) | zMask);
-
-	_accelBias = glm::vec3(accelBiasSum) / 16384.0f;
 }
 
 

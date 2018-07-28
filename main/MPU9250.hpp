@@ -16,7 +16,7 @@
 #define AK8963_ZOUT_L    uint8_t(0x07)
 #define AK8963_ZOUT_H    uint8_t(0x08)
 #define AK8963_ST2       uint8_t(0x09)
-#define AK8963_CNTL      uint8_t(0x0A)
+#define AK8963_CNTL1     uint8_t(0x0A)
 #define AK8963_CNTL2     uint8_t(0x0B)
 #define AK8963_ASTC      uint8_t(0x0C)
 #define AK8963_I2CDIS    uint8_t(0x0F)

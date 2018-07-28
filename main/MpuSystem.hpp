@@ -1,7 +1,6 @@
 #pragma once
 
 #include "MpuSensor.hpp"
-#include "CompassSensor.hpp"
 #include "freertos/FreeRTOS.h"
 #include "glm/glm.hpp"
 #ifndef GLM_ENABLE_EXPERIMENTAL
