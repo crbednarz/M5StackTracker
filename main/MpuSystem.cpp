@@ -4,8 +4,7 @@
 #include "MadgwickAHRS.h"
 
 
-MpuSystem::MpuSystem() :
-	_lastUpdate(xTaskGetTickCount())
+MpuSystem::MpuSystem()
 {
 	
 }

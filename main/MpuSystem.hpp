@@ -19,24 +19,13 @@ public:
 
 	inline glm::quat quaternion() const;
 
-	inline glm::vec3 rotation() const;
-
 private:	
-	TickType_t _lastUpdate;
 	MpuSensor _mpuSensor;
 	glm::quat _quaternion;
-
-	glm::vec3 _rotation;
 };
 
 
 inline glm::quat MpuSystem::quaternion() const
 {
 	return _quaternion;
-}
-
-
-inline glm::vec3 MpuSystem::rotation() const
-{
-	return _rotation;
 }
