@@ -12,9 +12,10 @@ void I2CDevice::initialize()
 	config.scl_io_num = I2C_SCL;
 	config.scl_pullup_en = GPIO_PULLUP_ENABLE;
 	config.master.clk_speed = 100000; // 100000 is the "Standard" frequency
-	
+
 	i2c_param_config(I2C_PORT, &config);
-	i2c_driver_install(I2C_PORT, config.mode, 0, 0, 0);		
+	i2c_driver_install(I2C_PORT, config.mode, 0, 0, 0);	
+	i2c_set_timeout(I2C_PORT, 1000000);
 }
 
 
@@ -34,8 +35,8 @@ void I2CDevice::write(gsl::span<const uint8_t> data) const
 	i2c_master_write_byte(cmd, (_slaveAddress << 1) | I2C_MASTER_WRITE, true);
 	i2c_master_write(cmd, const_cast<uint8_t*>(data.data()), data.length(), true);
 	i2c_master_stop(cmd);
-	i2c_master_cmd_begin(I2C_PORT, cmd, 1000 / portTICK_RATE_MS);
-	i2c_cmd_link_delete(cmd);	
+	i2c_master_cmd_begin(I2C_PORT, cmd, pdMS_TO_TICKS(100000));
+	i2c_cmd_link_delete(cmd);
 }
 
 void I2CDevice::read(gsl::span<uint8_t> output) const
@@ -44,10 +45,10 @@ void I2CDevice::read(gsl::span<uint8_t> output) const
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, (_slaveAddress << 1) | I2C_MASTER_READ, true);
 	if (output.length() > 1)
-		i2c_master_read(cmd, output.data(), output.length() - 1, I2C_MASTER_ACK);
-	i2c_master_read(cmd, output.data() + output.length() - 1, 1, I2C_MASTER_NACK);
+		i2c_master_read(cmd, output.data(), output.length(), I2C_MASTER_ACK);
+	i2c_master_read_byte(cmd, output.data() + output.length() - 1, I2C_MASTER_NACK);
 	i2c_master_stop(cmd);
-	i2c_master_cmd_begin(I2C_PORT, cmd, 1000 / portTICK_RATE_MS);
+	i2c_master_cmd_begin(I2C_PORT, cmd, pdMS_TO_TICKS(100000));
 	i2c_cmd_link_delete(cmd);
 }
 
@@ -62,8 +63,8 @@ void I2CDevice::write(gsl::span<const uint8_t> header, gsl::span<const uint8_t> 
 	i2c_master_write(cmd, const_cast<uint8_t*>(header.data()), header.length(), true);
 	i2c_master_write(cmd, const_cast<uint8_t*>(data.data()), data.length(), true);
 	i2c_master_stop(cmd);
-	i2c_master_cmd_begin(I2C_PORT, cmd, 1000 / portTICK_RATE_MS);
-	i2c_cmd_link_delete(cmd);	
+	i2c_master_cmd_begin(I2C_PORT, cmd, pdMS_TO_TICKS(100000));
+	i2c_cmd_link_delete(cmd);
 }
 
 
