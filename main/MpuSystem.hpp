@@ -20,8 +20,8 @@ public:
 	inline glm::quat quaternion() const;
 
 private:	
-	MpuSensor _mpuSensor;
 	glm::quat _quaternion;
+	I2CDevice _device;
 };
 
 

@@ -2,19 +2,57 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "MadgwickAHRS.h"
+#include "BNO055.hpp"
 
 
-MpuSystem::MpuSystem()
+MpuSystem::MpuSystem() :
+	_device(BNO055_ADDRESS)
 {
+	// Enter config mode
+	_device.write<uint8_t>(BNO055_OPR_MODE, 0x00);
+	vTaskDelay(100 / portTICK_RATE_MS);
+
+	// Reset device
+	_device.write<uint8_t>(BNO055_SYS_TRIGGER, 0x20);
+	vTaskDelay(100 / portTICK_RATE_MS);
+
+	while (_device.read<uint8_t>(BNO055_CHIP_ID) != 160) {
+		vTaskDelay(10 / portTICK_RATE_MS);
+	}
+
+	// Set power mode to normal
+	_device.write<uint8_t>(BNO055_PWR_MODE, 0x00);
+	vTaskDelay(100 / portTICK_RATE_MS);
+
+	_device.write<uint8_t>(BNO055_PAGE_ID, 0x00);
+	vTaskDelay(100 / portTICK_RATE_MS);
+
+	_device.write<uint8_t>(BNO055_SYS_TRIGGER, 0x00);
+	vTaskDelay(100 / portTICK_RATE_MS);
+
+	// Enter 9-DoF mode
+	_device.write<uint8_t>(BNO055_OPR_MODE, 0x0C);
+	vTaskDelay(100 / portTICK_RATE_MS);
 	
+
+	_device.write<uint8_t>(BNO055_PAGE_ID, 0x00);
+	auto status = _device.read<uint8_t>(BNO055_SYS_STAT);
+
+	printf("BNO055 Status: %i", status);
 }
 
 
 void MpuSystem::poll()
 {
-	_mpuSensor.poll();
+	//_mpuSensor.poll();
 
-	glm::vec3 accelState;
+	const double QUAT_SCALE = (1.0 / (1 << 14));
+
+	auto rawQuat = _device.read<glm::i16vec4>(BNO055_QUATERNION_DATA);
+
+	//printf("%i\n", id);
+	printf("%f %f %f %f\n", rawQuat.x * QUAT_SCALE, rawQuat.y * QUAT_SCALE, rawQuat.z * QUAT_SCALE, rawQuat.w * QUAT_SCALE);
+	/*glm::vec3 accelState;
 	glm::vec3 gyroState;
 	glm::vec3 compassState;
 
@@ -29,7 +67,12 @@ void MpuSystem::poll()
 			accelState.x, accelState.y, accelState.z,
 			compassState.y, compassState.x, compassState.z);
 	}
-	
+	*/
 
-	_quaternion = glm::quat(q0, q1, q2, q3);
+	_quaternion = glm::quat(
+		rawQuat.x * QUAT_SCALE, 
+		rawQuat.y * QUAT_SCALE, 
+		rawQuat.z * QUAT_SCALE, 
+		rawQuat.w * QUAT_SCALE);
+	//_quaternion = glm::quat(q0, q1, q2, q3);
 }

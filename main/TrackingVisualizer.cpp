@@ -26,7 +26,7 @@ void TrackingVisualizer::draw(InterlacedFrame& frame)
 	glm::mat4 model(1.0f);
 
 	model *= glm::translate(model, glm::vec3(0.0f, 0.0f, 25.0f));
-	model *= glm::toMat4(glm::inverse(glm::normalize(_mpu.quaternion())));
+	model *= glm::toMat4(_mpu.quaternion());
 	
 	for (int x = -5; x < 5; x++)
 	{
