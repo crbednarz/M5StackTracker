@@ -33,12 +33,6 @@ MpuSystem::MpuSystem() :
 	// Enter 9-DoF mode
 	_device.write<uint8_t>(BNO055_OPR_MODE, 0x0C);
 	vTaskDelay(100 / portTICK_RATE_MS);
-	
-
-	_device.write<uint8_t>(BNO055_PAGE_ID, 0x00);
-	auto status = _device.read<uint8_t>(BNO055_SYS_STAT);
-
-	printf("BNO055 Status: %i", status);
 }
 
 
@@ -49,7 +43,16 @@ void MpuSystem::poll()
 	const double QUAT_SCALE = (1.0 / (1 << 14));
 
 	auto rawQuat = _device.read<glm::i16vec4>(BNO055_QUATERNION_DATA);
+	auto status = _device.read<uint8_t>(BNO055_CALIB_STAT);
 
+	printf("BNO055 Status: %i  ", status);
+	for (int i = 0; i < 8; i++) 
+	{
+		printf("%i", (status & 0b10000000) >> 7);
+		status <<= 1;
+	}
+	printf("\n");
+	printf("Err: %i\n", _device.read<uint8_t>(BNO055_SYS_ERR));
 	//printf("%i\n", id);
 	printf("%f %f %f %f\n", rawQuat.x * QUAT_SCALE, rawQuat.y * QUAT_SCALE, rawQuat.z * QUAT_SCALE, rawQuat.w * QUAT_SCALE);
 	/*glm::vec3 accelState;

@@ -45,7 +45,7 @@ void I2CDevice::read(gsl::span<uint8_t> output) const
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, (_slaveAddress << 1) | I2C_MASTER_READ, true);
 	if (output.length() > 1)
-		i2c_master_read(cmd, output.data(), output.length(), I2C_MASTER_ACK);
+		i2c_master_read(cmd, output.data(), output.length() - 1, I2C_MASTER_ACK);
 	i2c_master_read_byte(cmd, output.data() + output.length() - 1, I2C_MASTER_NACK);
 	i2c_master_stop(cmd);
 	i2c_master_cmd_begin(I2C_PORT, cmd, pdMS_TO_TICKS(100000));

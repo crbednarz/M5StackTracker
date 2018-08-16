@@ -1,0 +1,3 @@
+
+COMPONENT_ADD_INCLUDEDIRS := VL53L0X/core/inc VL53L0X/platform/inc
+COMPONENT_SRCDIRS := VL53L0X/core/src VL53L0X/platform/src
